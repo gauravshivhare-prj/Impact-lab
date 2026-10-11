@@ -1,136 +1,74 @@
 # Software Requirements Specification (SRS)
 
 ## 1. Purpose
+Specify the minimum viable GhatWatch AI system: a MERN web application for exploring historical water-quality evidence and verified legal/operational information about Bhopal idol-immersion ghats.
 
-GhatWatch AI helps municipal/environmental planning users review
-historical water-quality observations for Bhopal immersion locations,
-inspect evidence on a map, distinguish environmental concerns from legal
-status, and generate concise bilingual briefs.
+## 2. System scope
+The application presents historical evidence, monitoring coverage, environmental-priority indicators, legal-status evidence, sourced nearby context, and transparent hypothetical scenarios. It is a decision-support tool, not a live monitoring system, legal authority, or guarantee of present water safety.
 
-## 2. Scope
-
-**In scope:** CSV import and validation; parameter/reference
-comparisons; deterministic environmental ranking; Google Maps markers
-using verified coordinates; evidence/source-page traceability;
-data-quality indicators; separate legal-status references; verified
-nearby context; clearly labelled hypothetical scenarios; English/Hindi
-brief generation from validated results.
-
-**Out of scope for the hackathon MVP:** live government/lab integration;
-automatic legal determinations or closure orders; real-time safety
-certification; unvalidated fish-death predictions; guaranteed five- or
-ten-year forecasts.
-
-## 3. Users
-
--   Primary: municipal or environmental planning officer.
--   Secondary: environmental analyst, researcher, festival-management
-    team and evaluator.
+## 3. Technology requirements
+- **Client:** React + Vite.
+- **API:** Node.js + Express.js REST API.
+- **Persistence:** MongoDB + Mongoose.
+- **Maps:** Google Maps JavaScript API.
+- **AI text:** Cerebras API called from the Express server.
+- **No Python/FastAPI service is part of the MVP.** CSV parsing, validation, metrics, and scenario calculations run in Node.js services.
 
 ## 4. Functional requirements
 
-  ------------------------------------------------------------------------
-  ID                      Requirement              Priority
-  ----------------------- ------------------------ -----------------------
-  FR-01                   Load supplied historical Must
-                          CSV data.                
+### FR-01: Ghat map
+Display only locations with a verified coordinate/source or clearly label uncertain locations. Users can select a marker and open its evidence panel. Environmental-priority and legal-status layers must be independently switchable.
 
-  FR-02                   Validate schema, dates,  Must
-                          numeric fields and       
-                          invalid measurements.    
+### FR-02: Historical evidence
+For each ghat, show available observations, parameter values, sample counts, observation dates/years, source references, and missing-data coverage. Preserve the original source page/report identifier.
 
-  FR-03                   Preserve missing, BDL    Must
-                          and ND without           
-                          converting them to zero. 
+### FR-03: Environmental benchmarks
+Where configured, compare measurements with the chosen official reference criteria. Current documentation references CPCB outdoor bathing criteria commonly stated as pH 6.5–8.5, DO greater than 5 mg/L, and BOD less than 3 mg/L. Verify the exact wording in the selected official source before implementation and keep thresholds centrally configured. These are comparison benchmarks, not a universal legal permission test for idol immersion.
 
-  FR-04                   Compare eligible         Must
-                          observations against     
-                          configured reference     
-                          criteria.                
+### FR-04: Explainable priority
+Calculate a deterministic historical-priority score or category using documented inputs and sample coverage. Show why a ghat received its category. Use `higher_historical_concern`, `moderate_historical_concern`, `lower_observed_concern`, or `insufficient_data`. Do not imply these labels describe current conditions.
 
-  FR-05                   Calculate valid sample   Must
-                          counts, exceedance       
-                          counts/rates and         
-                          severity.                
+### FR-05: Legal status
+Use one of `authorised`, `prohibited`, `conditional`, `not_verified`. A status other than `not_verified` requires a current applicable official source, relevant clause/order, scope, effective dates where available, and verification date. Historical water-quality reports are not proof of legal status.
 
-  FR-06                   Produce a transparent    Must
-                          environmental-priority   
-                          ranking.                 
+### FR-06: Nearby environmental context
+Show sourced and verified monitoring points, documented drains/outfalls, cleanup points, and alternative immersion facilities only when evidence is available. Display distance and provenance. Proximity is not causal proof.
 
-  FR-07                   Trace findings to source Must
-                          rows, dates/years and    
-                          source pages where       
-                          available.               
+### FR-07: Scenario lab
+Compare a historical baseline with explicitly hypothetical scenarios. Show assumptions, parameters changed, calculation method, and uncertainty. Do not claim causal impact or effectiveness without validated comparative evidence.
 
-  FR-08                   Show verified locations  Must
-                          on Google Maps and open  
-                          a detail panel on        
-                          selection.               
+### FR-08: Bilingual brief
+Allow users to generate an English or Hindi summary. Express backend-calculated facts to Cerebras as structured, validated input. The model may explain the facts but must not create measurements, legal determinations, or numerical predictions. Include sources, data dates, and limitations.
 
-  FR-09                   Display legal status     Must
-                          separately from          
-                          environmental priority.  
+### FR-09: API reliability
+Return consistent JSON, validation errors, not-found responses, and server errors. Do not expose credentials or internal stack traces.
 
-  FR-10                   Mark unverified legal    Must
-                          status explicitly.       
-
-  FR-11                   Generate English/Hindi   Should
-                          briefs from validated    
-                          results.                 
-
-  FR-12                   Show nearby verified     Should
-                          monitoring/context       
-                          points and distances.    
-
-  FR-13                   Show scenarios with      Should
-                          explicit assumptions and 
-                          limitations.             
-
-  FR-14                   Export a summary report. Could
-  ------------------------------------------------------------------------
+### FR-10: Data provenance
+Each imported record should retain its source, source page/report identifier where available, date, units, and original value/qualifier.
 
 ## 5. Non-functional requirements
+- Explainability: scores and thresholds are visible to users.
+- Data integrity: source values are preserved and validation failures are logged.
+- Security: secrets server-side only; validate and constrain all request inputs.
+- Performance: paginate large evidence lists and avoid repeated full CSV parsing per request.
+- Accessibility: keyboard-operable controls, readable contrast, and text equivalents for map information.
+- Resilience: map/API/AI failures should not blank the whole dashboard.
+- Reproducibility: deterministic analytics must give the same output for the same validated dataset and configuration.
 
--   Traceability: material findings link to source data or official
-    sources.
--   Transparency: criteria, sample counts, ranking method and scenario
-    assumptions are visible.
--   Reliability: missing/invalid data cannot silently become a pass.
--   Security: no API keys or credentials in the public repository.
--   Performance: supplied data is analysed quickly enough for a live
-    demo.
--   Usability/accessibility: readable labels, keyboard-accessible
-    controls and adequate contrast.
--   Maintainability: frontend, analytics, API, legal records, ML and
-    narrative generation are separate.
--   Language: English and Hindi output.
+## 6. Data and scientific constraints
+- Dataset coverage currently described as 1,524 rows across seven ghats, with observations from 2023–2025; verify these counts against the committed data before hard-coding.
+- Missing values are not zero or clean.
+- `BDL` and `ND` retain source semantics.
+- Only describe chromium, lead, zinc, and copper when present in the supplied dataset.
+- Do not claim actual aquatic mortality or assign mortality percentages without evidence.
+- Historic evidence cannot certify 2026 conditions.
 
-## 6. Initial environmental reference criteria
-
-Initial outdoor-bathing reference values include pH 6.5--8.5, DO \>5
-mg/L and BOD \<3 mg/L. Confirm exact operators and units against the
-chosen source and configured criteria. These are comparison benchmarks,
-not a universal legal permission test for idol immersion. Other
-parameters must only be compared where the criterion, units and
-measurement basis are verified.
-
-## 7. Legal-status rules
-
-Allowed values: `authorised`, `prohibited`, `conditional`,
-`not_verified`. Store authority, source URL, applicable clause/scope,
-document/effective dates where known and verification date. A historical
-water-quality result is not proof of permission or prohibition. Use
-`not_verified` unless a current applicable authoritative source supports
-the status.
-
-## 8. Acceptance criteria
-
--   Supplied data loads and invalid rows are handled visibly.
--   Missing, BDL and ND remain distinct.
--   Ranking is reproducible from deterministic calculations.
--   Map selection opens the matching location findings.
--   Environmental priority and legal status remain separate.
--   Coordinates are verified or explicitly marked approximate.
--   Reports include period and uncertainty caveats.
--   Historical data is not presented as live safety status.
--   No secrets are committed.
+## 7. Acceptance criteria
+- The app starts with documented npm commands.
+- Map markers and dashboard rows use the same canonical ghat IDs.
+- Legal status and environmental priority are displayed independently.
+- Each score has a human-readable explanation.
+- Missing data is visibly marked and excluded appropriately from denominators.
+- Brief generation uses server-side Cerebras credentials and only validated facts.
+- No API key, `.env` file, or credentials are committed.
+- Core parsing, validation, ranking, and API routes have tests.

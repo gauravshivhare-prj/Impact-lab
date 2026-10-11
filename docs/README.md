@@ -1,72 +1,94 @@
-# GhatWatch AI --- Documentation Index
+# GhatWatch AI — Project Documentation
 
-GhatWatch AI is a map-first environmental decision-support prototype for
-reviewing historical water-quality observations at Bhopal immersion
-locations. It combines traceable data analysis, Google Maps, verified
-legal-status references, transparent scenarios and bilingual decision
-briefs.
+> **Stack: MERN** — MongoDB, Express.js, React, Node.js.  
+> Google Maps JavaScript API provides the map. Cerebras is called from the Node.js server for bilingual narrative generation. **There is no Python/FastAPI backend in this project.**
 
-> **Boundary:** This is not a legal authority or live water-safety
-> certification system. Historical observations do not establish current
-> conditions. Environmental priority and legal/operational status must
-> remain separate.
+## Project summary
+GhatWatch AI is a geospatial environmental decision-support platform for idol-immersion ghats in Bhopal. It connects historical water-quality evidence, verified legal restrictions, nearby documented environmental context, and transparent hypothetical intervention scenarios. It helps users identify where further investigation may be needed without confusing historical environmental concern with current safety or legal authorisation.
 
-## Files
+## Repository layout
 
--   [SRS](SRS.md)
--   [PRD](PRD.md)
--   [Development phases](PHASES.md)
--   [Architecture](ARCHITECTURE.md)
--   [Development workflow and team roles](DEVELOPMENT.md)
--   [API contract](API_CONTRACT.md)
--   [Data dictionary](DATA_DICTIONARY.md)
+```text
+track-2-visarjan-ghat-watch/
+├── docs/
+│   ├── README.md
+│   ├── SRS.md
+│   ├── PRD.md
+│   ├── PHASES.md
+│   ├── ARCHITECTURE.md
+│   ├── DEVELOPMENT.md
+│   ├── API_CONTRACT.md
+│   └── DATA_DICTIONARY.md
+├── client/                         # React + Vite
+│   └── src/
+│       ├── components/
+│       ├── pages/
+│       ├── features/map/
+│       ├── features/dashboard/
+│       ├── services/api.js
+│       └── ...
+├── server/                         # Node.js + Express
+│   └── src/
+│       ├── config/
+│       ├── routes/
+│       ├── controllers/
+│       ├── services/
+│       ├── models/
+│       ├── middleware/
+│       ├── validators/
+│       └── app.js
+├── data/                           # Source datasets and data notes
+├── resources/                      # Participant guide and references
+├── .env.example
+├── .gitignore
+└── package.json                    # Optional npm workspaces/root scripts
+```
+
+Keep the existing repository folders if already established; this is the recommended application layout, not a requirement to move source data unnecessarily.
+
+## Core capabilities
+1. Map-first view with verified ghat markers and separate map layers.
+2. Historical water-quality evidence and monitoring-coverage summaries.
+3. Explainable, deterministic environmental-priority ranking.
+4. Legal/operational status with source and verification date.
+5. Nearby documented environmental context and verified facilities.
+6. Hypothetical scenario comparison with explicit assumptions.
+7. English/Hindi brief generation from validated server-side facts using Cerebras.
+8. Clear missing-data handling, provenance, and limitations.
 
 ## Team ownership
+- **Gaurvee:** scenario/ML logic and evaluation; implement in JavaScript/TypeScript under `server/src/services/scenarios/` unless a separately approved model artifact requires otherwise.
+- **Riddhi:** data ingestion, validation, analytics, priority ranking, and tests under `server/src/services/data/`.
+- **Gaurav:** Express routes/controllers, API integration, and report-generation endpoint.
+- **Pratham:** Google Maps view, verified markers, map layers, selection, and map-specific UI.
+- **Ansh:** dashboard, ranking table, evidence details, report UI, loading/error states.
 
-  Member    Ownership
-  --------- ----------------------------------------------------------
-  Gaurvee   ML and scenarios (`ml/`)
-  Riddhi    Backend data loading, validation, analytics and ranking
-  Gaurav    Backend API, integration and report-generation endpoints
-  Pratham   Frontend Google Maps and geospatial interactions
-  Ansh      Frontend dashboard, ranking/detail panels and report UI
+## Non-negotiable data and legal rules
+- Environmental priority and legal status are separate fields and separate UI layers.
+- Historical measurements do not prove current conditions in 2026.
+- A concerning historic result does not itself prove a ghat is prohibited; an authorised site is not thereby guaranteed to be environmentally safe.
+- Use `authorised`, `prohibited`, `conditional`, or `not_verified` only when supported by a current applicable official source. Otherwise use `not_verified`.
+- Missing or unsampled measurements are missing—not zero, clean, or a pass.
+- Preserve source meanings for `BDL` and `ND`; do not silently convert them to zero or treat them as equivalent unless the source says so.
+- Only report metals actually present in the supplied dataset (chromium, lead, zinc, copper).
+- Distance to a drain or facility does not prove that it caused pollution.
+- Do not invent intervention-effectiveness percentages or present hypothetical scenarios as forecasts.
+- The supplied historical dataset covers 2023–2025; do not claim it certifies current conditions or future outcomes.
+- Keep all API keys in local environment variables; never commit secrets.
 
-## Proposed stack
+## Stack and environment
+- Frontend: React, Vite, JavaScript or TypeScript, React Router as needed.
+- Backend: Node.js, Express.js.
+- Database: MongoDB with Mongoose.
+- Maps: Google Maps JavaScript API.
+- Charts: Recharts or another React-compatible chart library.
+- AI narrative: Cerebras API called **only from Express**.
+- Tests: Vitest/Jest for frontend and Node services; Supertest for Express API tests.
+- Optional data import: Node.js scripts that read CSV with a maintained Node CSV parser. Do not introduce FastAPI/pandas for ingestion.
 
-React + Vite; Google Maps JavaScript API; Python + FastAPI; pandas;
-isolated Python ML/scenario module; Cerebras API called server-side;
-Git + GitHub. If the repository already uses another working stack,
-preserve it and keep these module boundaries.
-
-## Official references
-
--   [MPPCB official website and water-monitoring
-    reports](https://www.mppcb.mp.gov.in/)
--   [MPPCB idol-immersion orders, guidelines and
-    reports](https://www.mppcb.mp.gov.in/Ganisheng-2021.aspx)
--   [MPPCB 2023 idol-immersion reports
-    page](https://www.mppcb.mp.gov.in/Ganisheng-2023.aspx)
--   [CPCB water-quality monitoring report and outdoor-bathing
-    criteria](https://cpcb.nic.in/wqm/Report-idol-imersion-2021.pdf)
--   [Revised idol-immersion guidelines (PDF hosted by
-    MPCB)](https://www.mpcb.gov.in/sites/default/files/water-quality/water-quality-status/RevisedGuidelines09092021.pdf)
--   [Google Maps JavaScript
-    API](https://developers.google.com/maps/documentation/javascript)
-
-Verify the latest applicable official order before displaying a
-location-specific legal status. A historical report or news article is
-not a substitute for the applicable official order.
-
-## Important rules
-
--   Supplied data covers historical observations (currently 2023--2025),
-    not live monitoring.
--   Reference bathing-water criteria include pH 6.5--8.5, DO \>5 mg/L
-    and BOD \<3 mg/L; confirm the exact source and operators in the
-    configured criteria. These are not a universal legal permission test
-    for every immersion site.
--   Preserve missing, BDL and ND as distinct states.
--   Threshold exceedance alone does not prove an activity is illegal.
--   Do not claim measured fish mortality, pollution causation or
-    validated 5--10-year forecasts without evidence.
--   Never commit `.env` or API keys.
+## Start here
+1. Agree on `API_CONTRACT.md` and `DATA_DICTIONARY.md` before parallel coding.
+2. Agree on the canonical ghat IDs, source records, and legal-status evidence.
+3. Create `.env.example` without real secrets.
+4. Implement deterministic data validation and ranking before AI narrative generation.
+5. Integrate through small feature branches and pull requests.
