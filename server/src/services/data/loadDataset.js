@@ -12,7 +12,7 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DATA_PATH = join(__dirname, '../../../../data/bhopal_ghats_2023_2025.csv');
+const DATA_PATH = join(__dirname, '../../../../track-2-visarjan-ghat-watch/data/bhopal_ghats_2023_2025.csv');
 
 export async function loadBhopalDataset() {
   const result = await importCsvFile(DATA_PATH);

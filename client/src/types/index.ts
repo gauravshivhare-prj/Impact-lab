@@ -75,6 +75,9 @@ export type PriorityLevel =
   | 'lower'
   | 'insufficient_evidence';
 
+export type CoordinateStatus = 'verified' | 'approximate' | 'not_verified';
+export type LegalStatus = 'authorised' | 'prohibited' | 'conditional' | 'not_verified';
+
 export interface ParameterStats {
   parameter: string;
   unit: string;
@@ -111,6 +114,12 @@ export interface GhatPriority {
   latestYear: number;
   yearsCovered: number[];
   durga2025Missing: boolean;
+  latitude: number;
+  longitude: number;
+  coordinateStatus: CoordinateStatus;
+  legalStatus: LegalStatus;
+  locationDescription: string;
+  googleMapsUrl: string;
   scoringBreakdown: {
     zeroDOPenalty: number;
     doExceedanceScore: number;

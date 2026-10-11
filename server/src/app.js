@@ -5,15 +5,16 @@ import ghatRoutes from './routes/ghat.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import scenarioRoutes from './routes/scenario.routes.js';
 import { createReportRoutes } from './routes/report.routes.js';
+import { createRiskRoutes } from './routes/risk.routes.js';
 import { createApiRateLimiter } from './middleware/rateLimit.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 export const API_PREFIX = '/api/v1';
 
 /**
- * @param {{ config: object, dataContext: object }} deps
+ * @param {{ config: object, dataContext: object, fetchImpl?: Function }} deps
  */
-export function createApp({ config, dataContext }) {
+export function createApp({ config, dataContext, fetchImpl }) {
   const app = express();
 
   app.disable('x-powered-by');
@@ -38,6 +39,7 @@ export function createApp({ config, dataContext }) {
   app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
   app.use(`${API_PREFIX}/scenarios`, scenarioRoutes);
   app.use(`${API_PREFIX}/reports`, createReportRoutes());
+  app.use(`${API_PREFIX}/risk`, createRiskRoutes({ engineUrl: config.engineUrl, fetchImpl }));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

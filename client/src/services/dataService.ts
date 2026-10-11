@@ -1,6 +1,7 @@
 import type { Measurement, GhatPriority, DataQualityIssue, RawCsvRecord } from '../types';
 import { BHOPAL_GHATS_RAW_DATA } from '../data/bhopalGhatsRawData';
 import { parseAndValidateRecord, OFFICIAL_REPORT_SOURCES, CPCB_CRITERIA_SOURCE, NGT_ORDER_SOURCE } from './dataValidation';
+import { fetchRawRecordsFromApi } from './apiClient';
 import { rankAllSites, extractDataQualityIssues, type FilterOptions } from './analysisService';
 
 class DataService {
@@ -29,6 +30,22 @@ class DataService {
     } catch (err) {
       console.error('Failed to initialize raw dataset:', err);
       this.loadError = err instanceof Error ? err.message : 'Unknown data loading error';
+    }
+  }
+
+  /**
+   * Replaces the embedded dataset with records served by the Express API (GET /ghats, /ghats/:id).
+   * Returns false, keeping the embedded dataset, if the API is unreachable or returns nothing.
+   */
+  public async loadFromApi(): Promise<boolean> {
+    try {
+      const records = await fetchRawRecordsFromApi();
+      if (records.length === 0) return false;
+      this.measurements = records.map((raw, idx) => parseAndValidateRecord(raw, idx));
+      return true;
+    } catch (err) {
+      console.warn('GhatWatch API unavailable, using embedded dataset:', err);
+      return false;
     }
   }
 

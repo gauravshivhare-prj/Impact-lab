@@ -312,3 +312,45 @@ describe('loadEnv', () => {
     assert.throws(() => loadEnv({ NODE_ENV: 'production' }), /CLIENT_ORIGIN/);
   });
 });
+
+describe('GET /api/v1/risk (Python engine proxy)', () => {
+  const engineBody = { data: [{ site: 'Test ghat', risk: 'Needs attention' }], meta: { count: 1 } };
+  const appWithEngine = (fetchImpl) => createApp({ config, dataContext, fetchImpl });
+
+  it('relays the engine response and forwards validated filters', async () => {
+    let requestedUrl;
+    const fetchImpl = async (url) => {
+      requestedUrl = url;
+      return { ok: true, status: 200, json: async () => engineBody };
+    };
+    const res = await request(appWithEngine(fetchImpl)).get('/api/v1/risk?year=2025&phase=during&festival=Durga');
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body, engineBody);
+    assert.match(requestedUrl, /year=2025&phase=during&festival=Durga$/);
+  });
+
+  it('rejects invalid query values before calling the engine', async () => {
+    const fetchImpl = async () => assert.fail('engine must not be called');
+    for (const query of ['', '?year=abc', '?year=2025&phase=later', '?year=2025&festival=<x>']) {
+      const res = await request(appWithEngine(fetchImpl)).get(`/api/v1/risk${query}`);
+      assert.equal(res.status, 400, query);
+      assert.equal(res.body.error.code, 'VALIDATION_ERROR');
+    }
+  });
+
+  it('returns 503 ENGINE_UNAVAILABLE when the engine is down', async () => {
+    const fetchImpl = async () => {
+      throw new Error('ECONNREFUSED');
+    };
+    const res = await request(appWithEngine(fetchImpl)).get('/api/v1/risk?year=2025');
+    assert.equal(res.status, 503);
+    assert.equal(res.body.error.code, 'ENGINE_UNAVAILABLE');
+  });
+
+  it('maps engine 422 to INSUFFICIENT_DATA', async () => {
+    const fetchImpl = async () => ({ ok: false, status: 422, json: async () => ({}) });
+    const res = await request(appWithEngine(fetchImpl)).get('/api/v1/risk?year=2025');
+    assert.equal(res.status, 422);
+    assert.equal(res.body.error.code, 'INSUFFICIENT_DATA');
+  });
+});

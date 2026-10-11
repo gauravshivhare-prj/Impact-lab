@@ -1,11 +1,11 @@
 # GhatWatch AI — Express API
 
-Node.js + Express REST API for GhatWatch AI. Contract: [`docs/API_CONTRACT.md`](../../docs/API_CONTRACT.md).
+Node.js + Express REST API for GhatWatch AI. Contract: [`docs/API_CONTRACT.md`](../docs/API_CONTRACT.md).
 
 ## Run it
 
 ```bash
-cd track-2-visarjan-ghat-watch/server
+cd server
 npm install
 cp .env.example .env
 npm run dev               # http://localhost:5000/api/v1
@@ -25,7 +25,7 @@ Requires Node.js 18 or later.
 
 ## Persistence mode
 
-The API uses a **validated in-memory dataset**. At startup it imports `../data/bhopal_ghats_2023_2025.csv` once using the data and analytics services, then serves cached results. It does not use MongoDB. If the import fails, the server does not start.
+The API uses a **validated in-memory dataset**. At startup it imports `track-2-visarjan-ghat-watch/data/bhopal_ghats_2023_2025.csv` once using the data and analytics services, then serves cached results. It does not use MongoDB. If the import fails, the server does not start.
 
 ## Endpoints (`/api/v1`)
 
@@ -71,7 +71,7 @@ Brief generation is limited to 30 requests per minute per client IP; all other e
 
 ## Deployment checklist
 
-- **Host settings:** root directory `track-2-visarjan-ghat-watch/server`, build command `npm install`, start command `npm start`.
+- **Host settings:** root directory `server`, build command `npm install`, start command `npm start`.
 - **`CLIENT_ORIGIN`:** set `NODE_ENV=production` and set `CLIENT_ORIGIN` to the deployed frontend origin. The server refuses to start without `CLIENT_ORIGIN`.
 - **`TRUST_PROXY`:** set it to the number of proxy hops when the server runs behind a reverse proxy, so rate limiting sees real client IPs.
 - **Secrets:** set environment variables in the host's dashboard. Never commit a `.env` file.

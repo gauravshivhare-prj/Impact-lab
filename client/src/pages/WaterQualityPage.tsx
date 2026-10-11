@@ -5,6 +5,8 @@ import {
   Calendar,
   AlertTriangle,
   ChevronDown,
+  MapPin,
+  Compass,
 } from 'lucide-react';
 import {
   LineChart,
@@ -17,19 +19,30 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { dataService } from '../services/dataService';
-import { PriorityBadge, ConfidenceBadge } from '../components/common/Badge';
+import {
+  PriorityBadge,
+  ConfidenceBadge,
+  LegalStatusBadge,
+  CoordinateStatusBadge,
+} from '../components/common/Badge';
+
+import type { GhatPriority } from '../types';
 
 interface WaterQualityPageProps {
   selectedSite: string;
   onSelectSite: (siteName: string) => void;
+  onOpenGhatDetail?: (ghat: GhatPriority) => void;
   onNavigateToEvidenceWithSite: (siteName: string, param?: string) => void;
+  onNavigateToMap?: (siteName: string) => void;
   language?: 'en' | 'hi';
 }
 
 export const WaterQualityPage: React.FC<WaterQualityPageProps> = ({
   selectedSite,
   onSelectSite,
+  onOpenGhatDetail,
   onNavigateToEvidenceWithSite,
+  onNavigateToMap,
 }) => {
   const allRankings = dataService.getSiteRankings();
   const currentSiteName = selectedSite || allRankings[0]?.site || 'Bairagarh (Sant Hirdaram) kund';
@@ -143,6 +156,56 @@ export const WaterQualityPage: React.FC<WaterQualityPageProps> = ({
             </div>
           </div>
         )}
+
+        {/* Geospatial Location & NGT Status Card */}
+        <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <Compass className="w-4 h-4 text-teal-600" />
+              <span className="font-semibold text-slate-800 uppercase tracking-wider text-[11px]">
+                Location Coordinates:
+              </span>
+              <span className="font-mono font-bold text-slate-900">
+                {siteDetails.latitude.toFixed(4)}° N, {siteDetails.longitude.toFixed(4)}° E
+              </span>
+              <CoordinateStatusBadge status={siteDetails.coordinateStatus} />
+              <LegalStatusBadge status={siteDetails.legalStatus} />
+            </div>
+            <p className="text-slate-500 text-xs">
+              {siteDetails.locationDescription}
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            {onOpenGhatDetail && (
+              <button
+                onClick={() => onOpenGhatDetail(siteDetails)}
+                className="inline-flex items-center text-xs font-semibold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-lg shadow-2xs transition-colors"
+                title="Open location map and geospatial dossier"
+              >
+                <MapPin className="w-3.5 h-3.5 mr-1 text-teal-600" />
+                Details &amp; Map
+              </button>
+            )}
+            {onNavigateToMap && (
+              <button
+                onClick={() => onNavigateToMap(siteDetails.site)}
+                className="inline-flex items-center text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 px-3 py-1.5 rounded-lg shadow-2xs transition-colors"
+              >
+                Full Map
+              </button>
+            )}
+            <a
+              href={siteDetails.googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 px-3 py-1.5 rounded-lg shadow-2xs transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5 mr-1 text-slate-400" />
+              Google Maps
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* CPCB Class B Criteria Reference Box */}

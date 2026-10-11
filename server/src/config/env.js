@@ -4,6 +4,7 @@
 
 const DEFAULT_PORT = 5000;
 const DEFAULT_DEV_CLIENT_ORIGIN = 'http://localhost:5173';
+const DEFAULT_ENGINE_URL = 'http://127.0.0.1:8000';
 
 function parseInteger(name, value, { min, max, fallback }) {
   if (value === undefined || value === '') return fallback;
@@ -37,6 +38,7 @@ export function loadEnv(source = process.env) {
     isProduction,
     port: parseInteger('PORT', source.PORT, { min: 1, max: 65535, fallback: DEFAULT_PORT }),
     clientOrigins: parseOrigins(source.CLIENT_ORIGIN, isProduction),
+    engineUrl: (source.ENGINE_URL || DEFAULT_ENGINE_URL).replace(/\/+$/, ''),
     trustProxy: parseInteger('TRUST_PROXY', source.TRUST_PROXY, { min: 0, max: 10, fallback: 0 }),
   });
 }

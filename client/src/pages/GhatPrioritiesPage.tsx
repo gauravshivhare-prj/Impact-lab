@@ -5,18 +5,22 @@ import {
   AlertTriangle,
   ExternalLink,
   SlidersHorizontal,
+  MapPin,
 } from 'lucide-react';
 import { dataService } from '../services/dataService';
 import { PriorityBadge, ConfidenceBadge } from '../components/common/Badge';
+import type { GhatPriority } from '../types';
 
 interface GhatPrioritiesPageProps {
   onSelectGhat: (siteName: string) => void;
+  onOpenGhatDetail?: (ghat: GhatPriority) => void;
   onNavigateToEvidenceWithSite: (siteName: string) => void;
   language: 'en' | 'hi';
 }
 
 export const GhatPrioritiesPage: React.FC<GhatPrioritiesPageProps> = ({
   onSelectGhat,
+  onOpenGhatDetail,
   onNavigateToEvidenceWithSite,
   language,
 }) => {
@@ -225,8 +229,13 @@ export const GhatPrioritiesPage: React.FC<GhatPrioritiesPageProps> = ({
                       <span className="font-mono text-sm font-bold text-slate-400">
                         #{ghat.rank}
                       </span>
-                      <h3 className="text-base font-semibold text-slate-900">
-                        {ghat.site}
+                      <h3
+                        onClick={() => (onOpenGhatDetail ? onOpenGhatDetail(ghat) : onSelectGhat(ghat.site))}
+                        className="text-base font-semibold text-slate-900 hover:text-teal-700 cursor-pointer transition-colors inline-flex items-center gap-1.5"
+                        title={language === 'hi' ? 'मानचित्र व विवरण खोलें' : 'Open details and map'}
+                      >
+                        <span>{ghat.site}</span>
+                        <MapPin className="w-3.5 h-3.5 text-teal-600" />
                       </h3>
                       <span className="text-xs text-slate-500 font-normal">
                         ({ghat.waterBody})
@@ -340,14 +349,22 @@ export const GhatPrioritiesPage: React.FC<GhatPrioritiesPageProps> = ({
                     {/* Action buttons */}
                     <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
                       <button
-                        onClick={() => onSelectGhat(ghat.site)}
-                        className="flex-1 text-center text-xs font-medium text-white bg-slate-800 hover:bg-slate-900 py-1.5 px-3 rounded transition-colors"
+                        onClick={() => (onOpenGhatDetail ? onOpenGhatDetail(ghat) : onSelectGhat(ghat.site))}
+                        className="flex-1 text-center text-xs font-semibold text-white bg-teal-700 hover:bg-teal-800 py-1.5 px-3 rounded-md transition-colors inline-flex items-center justify-center gap-1.5 shadow-2xs"
                       >
-                        Inspect Details
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>{language === 'hi' ? 'विवरण व मानचित्र' : 'Details & Map'}</span>
+                      </button>
+                      <button
+                        onClick={() => onSelectGhat(ghat.site)}
+                        className="text-xs text-slate-700 hover:text-slate-900 bg-white border border-slate-300 hover:bg-slate-50 py-1.5 px-2.5 rounded-md transition-colors"
+                        title={language === 'hi' ? 'जल गुणवत्ता रुझान' : 'Water quality trends'}
+                      >
+                        {language === 'hi' ? 'गुणवत्ता' : 'Trends'}
                       </button>
                       <button
                         onClick={() => onNavigateToEvidenceWithSite(ghat.site)}
-                        className="text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-300 hover:bg-slate-50 py-1.5 px-2.5 rounded transition-colors"
+                        className="text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-300 hover:bg-slate-50 py-1.5 px-2 rounded-md transition-colors"
                         title="View evidence records"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />

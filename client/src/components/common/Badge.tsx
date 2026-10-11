@@ -39,13 +39,33 @@ export const Badge: React.FC<BadgeProps> = ({
 export const PriorityBadge: React.FC<{ priority: PriorityLevel }> = ({ priority }) => {
   switch (priority) {
     case 'high':
-      return <Badge variant="danger">High Priority</Badge>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-100">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>
+          High
+        </span>
+      );
     case 'medium':
-      return <Badge variant="warning">Medium Priority</Badge>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+          Medium
+        </span>
+      );
     case 'lower':
-      return <Badge variant="neutral">Lower Priority</Badge>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+          Lower
+        </span>
+      );
     case 'insufficient_evidence':
-      return <Badge variant="info">Review Needed</Badge>;
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+          Review Needed
+        </span>
+      );
   }
 };
 
@@ -72,5 +92,61 @@ export const ComparisonBadge: React.FC<{ status: ComparisonStatus }> = ({ status
       return <Badge variant="neutral">Non-numeric</Badge>;
     case 'unassessed':
       return <Badge variant="neutral">No Class B Limit</Badge>;
+  }
+};
+
+export const LegalStatusBadge: React.FC<{ status: 'authorised' | 'prohibited' | 'conditional' | 'not_verified' }> = ({
+  status,
+}) => {
+  switch (status) {
+    case 'prohibited':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+          Prohibited in Lake (NGT)
+        </span>
+      );
+    case 'conditional':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+          Conditional in Kund
+        </span>
+      );
+    case 'authorised':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          Authorised Artificial Kund
+        </span>
+      );
+    case 'not_verified':
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+          Status Unverified
+        </span>
+      );
+  }
+};
+
+export const CoordinateStatusBadge: React.FC<{ status: 'verified' | 'approximate' | 'not_verified' }> = ({
+  status,
+}) => {
+  switch (status) {
+    case 'verified':
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
+          GPS Verified
+        </span>
+      );
+    case 'approximate':
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+          Approximate Location
+        </span>
+      );
+    case 'not_verified':
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+          Unverified Coord
+        </span>
+      );
   }
 };

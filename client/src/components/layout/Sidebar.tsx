@@ -1,18 +1,24 @@
 import React from 'react';
 import {
-  LayoutDashboard,
-  AlertTriangle,
-  Droplets,
+  Home,
+  Map,
+  BarChart2,
+  Droplet,
   Search,
   Database,
   FileText,
   BookOpen,
+  Calendar,
+  Info,
+  ShieldAlert,
   X,
 } from 'lucide-react';
 
 export type NavItemKey =
   | 'overview'
+  | 'map'
   | 'priorities'
+  | 'risk'
   | 'quality'
   | 'evidence'
   | 'data-quality'
@@ -39,19 +45,31 @@ const NAV_ITEMS: NavItemDef[] = [
     key: 'overview',
     labelEn: 'Overview',
     labelHi: 'अवलोकन',
-    icon: LayoutDashboard,
+    icon: Home,
+  },
+  {
+    key: 'map',
+    labelEn: 'Ghat Map',
+    labelHi: 'घाट मानचित्र',
+    icon: Map,
   },
   {
     key: 'priorities',
     labelEn: 'Ghat Priorities',
     labelHi: 'घाट प्राथमिकताएं',
-    icon: AlertTriangle,
+    icon: BarChart2,
+  },
+  {
+    key: 'risk',
+    labelEn: 'Risk Screening',
+    labelHi: 'जोखिम स्क्रीनिंग',
+    icon: ShieldAlert,
   },
   {
     key: 'quality',
     labelEn: 'Water Quality',
     labelHi: 'जल गुणवत्ता',
-    icon: Droplets,
+    icon: Droplet,
   },
   {
     key: 'evidence',
@@ -87,19 +105,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
   language,
 }) => {
   const content = (
-    <div className="flex flex-col h-full bg-white border-r border-slate-200 w-64 select-none">
+    <div className="flex flex-col h-full bg-white border-r border-slate-200/80 w-[260px] select-none">
       {/* Brand Header */}
-      <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-teal-700"></span>
-            <span className="font-semibold text-slate-900 tracking-tight text-base">
-              GhatWatch
-            </span>
+      <div className="px-6 py-6 flex items-start justify-between">
+        <div className="flex items-start space-x-3">
+          {/* Dual Wave Logo */}
+          <div className="mt-0.5">
+            <svg
+              viewBox="0 0 36 32"
+              fill="none"
+              className="w-8 h-7 text-teal-600"
+            >
+              <path
+                d="M3 10C7.5 5.5 12.5 14.5 17 10C21.5 5.5 26.5 14.5 31 10"
+                stroke="#0d9488"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M3 20C7.5 15.5 12.5 24.5 17 20C21.5 15.5 26.5 24.5 31 20"
+                stroke="#0d9488"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
-          <p className="text-[11px] text-slate-500 font-medium tracking-wide uppercase mt-0.5">
-            {language === 'hi' ? 'विसर्जन घाट वॉच · बीएमसी' : 'Visarjan Ghat Watch · BMC'}
-          </p>
+          <div>
+            <h1 className="font-bold text-slate-900 tracking-tight text-xl leading-tight">
+              GhatWatch
+            </h1>
+            <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">
+              VISARJAN GHAT WATCH
+            </p>
+            <p className="text-xs text-slate-400 font-medium mt-0.5">
+              BMC · Bhopal
+            </p>
+          </div>
         </div>
         {mobileOpen && (
           <button
@@ -113,7 +154,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3.5 space-y-1.5 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.key;
@@ -126,15 +167,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onSelectTab(item.key);
                 if (mobileOpen) onCloseMobile();
               }}
-              className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-left ${
+              className={`w-full flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg transition-colors text-left ${
                 isActive
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
+                  ? 'bg-[#e8f5f3] text-[#0f766e] font-semibold'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <Icon
-                className={`w-4 h-4 mr-3 flex-shrink-0 ${
-                  isActive ? 'text-teal-700' : 'text-slate-400'
+                className={`w-[18px] h-[18px] mr-3.5 flex-shrink-0 ${
+                  isActive ? 'text-[#0f766e]' : 'text-slate-400'
                 }`}
               />
               <span className="truncate">{label}</span>
@@ -143,15 +184,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* Bottom Context Badge */}
-      <div className="p-4 border-t border-slate-200 bg-slate-50">
-        <div className="text-[11px] text-slate-500 leading-relaxed">
-          <span className="font-medium text-slate-700 block mb-0.5">
-            {language === 'hi' ? 'ऐतिहासिक रिकॉर्ड्स' : 'Historical Evidence'}
-          </span>
-          {language === 'hi'
-            ? '2023–2025 · म.प्र. प्रदूषण नियंत्रण बोर्ड'
-            : '2023–2025 · MPPCB Reports'}
+      {/* Bottom Historical Data & Disclaimer */}
+      <div className="p-5 border-t border-slate-100 space-y-4">
+        {/* Historical Data Item */}
+        <div className="flex items-start space-x-3">
+          <Calendar className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <div className="text-xs leading-tight">
+            <span className="font-semibold text-slate-800 block">
+              Historical Data
+            </span>
+            <span className="text-[11px] text-slate-500 block mt-0.5">
+              2023 – 2025
+            </span>
+            <span className="text-[11px] text-slate-400 block mt-0.5">
+              MPPCB Reports
+            </span>
+          </div>
+        </div>
+
+        {/* Disclaimer Item */}
+        <div className="flex items-start space-x-3 pt-1">
+          <Info className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <p className="text-[11px] text-slate-400 leading-snug">
+            This is a historical analysis tool. Results do not establish current water quality.
+          </p>
         </div>
       </div>
     </div>

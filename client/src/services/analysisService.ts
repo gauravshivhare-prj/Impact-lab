@@ -6,6 +6,7 @@ import type {
   DataQualityIssue,
 } from '../types';
 import { THRESHOLD_RULES } from './thresholdRules';
+import { GHAT_GEOSPATIAL_DATA } from '../data/ghatGeospatialData';
 
 export interface FilterOptions {
   year?: string; // 'all' | '2023' | '2024' | '2025'
@@ -225,6 +226,15 @@ export function analyzeSitePriority(
     latestYear,
     yearsCovered: distinctYears,
     durga2025Missing,
+    latitude: GHAT_GEOSPATIAL_DATA[siteName]?.latitude ?? 23.25,
+    longitude: GHAT_GEOSPATIAL_DATA[siteName]?.longitude ?? 77.40,
+    coordinateStatus: GHAT_GEOSPATIAL_DATA[siteName]?.coordinateStatus ?? 'not_verified',
+    legalStatus: GHAT_GEOSPATIAL_DATA[siteName]?.legalStatus ?? 'not_verified',
+    locationDescription:
+      GHAT_GEOSPATIAL_DATA[siteName]?.locationDescription ?? 'Location within Bhopal urban lake basin',
+    googleMapsUrl:
+      GHAT_GEOSPATIAL_DATA[siteName]?.googleMapsUrl ??
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteName + ' Bhopal')}`,
     scoringBreakdown: {
       zeroDOPenalty,
       doExceedanceScore,

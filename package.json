@@ -1,0 +1,20 @@
+{
+  "name": "ghatwatch",
+  "private": true,
+  "version": "1.0.0",
+  "description": "GhatWatch AI — Visarjan Ghat Watch for Bhopal: React client, Express API and Python risk engine",
+  "scripts": {
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install && python -m pip install -r engine/requirements.txt",
+    "dev": "concurrently -k -n api,engine,client -c blue,magenta,green \"npm:dev:server\" \"npm:dev:engine\" \"npm:dev:client\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:engine": "python -m uvicorn api:app --app-dir engine --host 127.0.0.1 --port 8000",
+    "dev:client": "npm --prefix client run dev",
+    "test": "npm run test:server && npm run test:engine",
+    "test:server": "npm --prefix server test",
+    "test:engine": "cd engine && python -m unittest discover -s tests",
+    "build": "npm --prefix client run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
