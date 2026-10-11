@@ -8,11 +8,27 @@ import { aggregateAllGhats, generateDatasetSummary } from '../analytics/evidence
 import { rankAllGhats } from '../analytics/ranking.service.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DATA_PATH = join(__dirname, '../../../../track-2-visarjan-ghat-watch/data/bhopal_ghats_2023_2025.csv');
+function resolveDatasetPath() {
+  if (process.env.DATA_PATH && fs.existsSync(process.env.DATA_PATH)) {
+    return process.env.DATA_PATH;
+  }
+  const defaultRelative = join(__dirname, '../../../../track-2-visarjan-ghat-watch/data/bhopal_ghats_2023_2025.csv');
+  if (fs.existsSync(defaultRelative)) {
+    return defaultRelative;
+  }
+  const cwdRelative = join(process.cwd(), 'track-2-visarjan-ghat-watch/data/bhopal_ghats_2023_2025.csv');
+  if (fs.existsSync(cwdRelative)) {
+    return cwdRelative;
+  }
+  return defaultRelative;
+}
+
+const DATA_PATH = resolveDatasetPath();
 
 export async function loadBhopalDataset() {
   const result = await importCsvFile(DATA_PATH);

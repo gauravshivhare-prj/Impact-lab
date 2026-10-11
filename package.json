@@ -12,7 +12,11 @@
     "test": "npm run test:server && npm run test:engine",
     "test:server": "npm --prefix server test",
     "test:engine": "cd engine && python -m unittest discover -s tests",
-    "build": "npm --prefix client run build"
+    "build": "npm --prefix client run build",
+    "build:all": "npm --prefix client run build",
+    "start": "node server/src/server.js",
+    "start:engine": "python -m uvicorn api:app --app-dir engine --host 127.0.0.1 --port 8000",
+    "start:prod": "concurrently -k -n engine,server -c magenta,blue \"npm:start:engine\" \"npm:start\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
