@@ -23,6 +23,7 @@ export function App() {
   const [inspectingMeasurement, setInspectingMeasurement] = useState<Measurement | null>(null);
   const [inspectingGhat, setInspectingGhat] = useState<GhatPriority | null>(null);
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
+  const [selectedYear, setSelectedYear] = useState<string>('all');
   const [dataSource, setDataSource] = useState<'loading' | 'api' | 'embedded'>('loading');
 
   // Prefer live data from the Express API; fall back to the embedded dataset if it is unreachable.
@@ -97,6 +98,8 @@ export function App() {
         }}
         language={language}
         onToggleLanguage={toggleLanguage}
+        selectedYear={selectedYear}
+        onSelectYear={setSelectedYear}
       />
 
       {/* Main Content Area */}
