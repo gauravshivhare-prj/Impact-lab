@@ -8,7 +8,7 @@ async function start() {
   const dataContext = await loadDataContext();
 
   const app = createApp({ config, dataContext });
-  const server = app.listen(config.port, (err) => {
+  const server = app.listen(config.port, '0.0.0.0', (err) => {
     if (err) {
       console.error(`Failed to listen on port ${config.port}: ${err.message}`);
       process.exit(1);

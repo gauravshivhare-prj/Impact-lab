@@ -7,8 +7,8 @@ echo "=========================================================="
 
 # Ensure CLIENT_ORIGIN is set if not provided by host environment
 if [ -z "$CLIENT_ORIGIN" ]; then
-  export CLIENT_ORIGIN="http://localhost:${PORT:-5000}"
-  echo "Defaulting CLIENT_ORIGIN to: $CLIENT_ORIGIN"
+  export CLIENT_ORIGIN="*"
+  echo "Defaulting CLIENT_ORIGIN to: *"
 fi
 
 # 1. Start Python Risk Engine in the background

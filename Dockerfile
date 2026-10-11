@@ -56,7 +56,7 @@ RUN sed -i 's/\r$//' /app/docker-entrypoint.sh && chmod +x /app/docker-entrypoin
 ENV NODE_ENV=production \
     PORT=5000 \
     ENGINE_URL=http://127.0.0.1:8000 \
-    CLIENT_ORIGIN=http://localhost:5000 \
+    CLIENT_ORIGIN=* \
     PATH="/app/venv/bin:$PATH"
 
 EXPOSE 5000

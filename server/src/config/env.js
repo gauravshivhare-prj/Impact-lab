@@ -21,10 +21,16 @@ function parseOrigins(value, isProduction) {
     return [DEFAULT_DEV_CLIENT_ORIGIN];
   }
   return value.split(',').map((origin) => {
+    const trimmed = origin.trim();
+    if (trimmed === '*') return '*';
     try {
-      return new URL(origin.trim()).origin;
+      return new URL(trimmed).origin;
     } catch {
-      throw new Error('CLIENT_ORIGIN must be a comma-separated list of URL origins.');
+      try {
+        return new URL(`https://${trimmed}`).origin;
+      } catch {
+        return trimmed;
+      }
     }
   });
 }

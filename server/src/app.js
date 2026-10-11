@@ -53,7 +53,7 @@ export function createApp({ config, dataContext, fetchImpl }) {
   );
   app.use(
     cors({
-      origin: config.clientOrigins,
+      origin: config.clientOrigins.includes('*') ? true : config.clientOrigins,
       methods: ['GET', 'POST'],
       allowedHeaders: ['Content-Type', 'Accept'],
     }),
