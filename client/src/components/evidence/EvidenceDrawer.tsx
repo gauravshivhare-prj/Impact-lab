@@ -19,7 +19,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
   if (!measurement) return null;
 
   const handleCopySummary = () => {
-    const summaryText = `[GhatWatch Evidence]
+    const summaryText = `[Ghatरक्षक Evidence]
 Site: ${measurement.site} (Printed: "${measurement.siteAsPrinted}")
 Water Body: ${measurement.waterBody}
 Year: ${measurement.year} | Festival: ${measurement.festival} | Phase: ${measurement.phase}

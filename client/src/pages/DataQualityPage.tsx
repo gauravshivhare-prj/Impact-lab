@@ -79,7 +79,7 @@ export const DataQualityPage: React.FC<DataQualityPageProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'ghatwatch_data_quality_issues.csv';
+    link.download = 'ghatrakshak_data_quality_issues.csv';
     link.click();
   };
 

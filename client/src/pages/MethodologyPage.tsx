@@ -28,7 +28,7 @@ export const MethodologyPage: React.FC<MethodologyPageProps> = () => {
           Methodology &amp; Regulatory Analytical Framework
         </h2>
         <p className="text-sm text-slate-700 leading-relaxed">
-          GhatWatch is an empirical decision-support system designed for the Bhopal Municipal Corporation (BMC). It aggregates historical water quality test tables published by the Madhya Pradesh Pollution Control Board (MPPCB) during Ganesh and Durga Visarjan festivals between 2023 and 2025. It applies deterministic, auditable rules to identify locations warranting pre-visarjan intervention.
+          Ghatरक्षक is an empirical decision-support system designed for the Bhopal Municipal Corporation (BMC). It aggregates historical water quality test tables published by the Madhya Pradesh Pollution Control Board (MPPCB) during Ganesh and Durga Visarjan festivals between 2023 and 2025. It applies deterministic, auditable rules to identify locations warranting pre-visarjan intervention.
         </p>
       </div>
 
@@ -77,7 +77,7 @@ export const MethodologyPage: React.FC<MethodologyPageProps> = () => {
         </div>
 
         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-          GhatWatch does <strong>not</strong> employ opaque machine learning or unvalidated predictive risk models. Site prioritization is computed directly from 5 transparent, explainable empirical factors:
+          Ghatरक्षक does <strong>not</strong> employ opaque machine learning or unvalidated predictive risk models. Site prioritization is computed directly from 5 transparent, explainable empirical factors:
         </p>
 
         <div className="border border-slate-200 rounded divide-y divide-slate-100 text-xs">
@@ -155,7 +155,7 @@ export const MethodologyPage: React.FC<MethodologyPageProps> = () => {
         </div>
 
         <div className="p-3 bg-slate-100 rounded text-xs text-slate-600">
-          <strong>Important Standard Disclaimer:</strong> CPCB Class B does not establish fixed numeric bathing limits for COD, total solids, suspended solids, turbidity, or heavy metals (Chromium, Lead, Zinc, Copper). Consequently, GhatWatch displays measurements for those 10 parameters honestly as unassessed rather than fabricating unscientific pass/fail limits.
+          <strong>Important Standard Disclaimer:</strong> CPCB Class B does not establish fixed numeric bathing limits for COD, total solids, suspended solids, turbidity, or heavy metals (Chromium, Lead, Zinc, Copper). Consequently, Ghatरक्षक displays measurements for those 10 parameters honestly as unassessed rather than fabricating unscientific pass/fail limits.
         </div>
       </div>
 

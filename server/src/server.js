@@ -14,7 +14,7 @@ async function start() {
       process.exit(1);
     }
     console.log(
-      `GhatWatch API listening on port ${config.port} (${config.nodeEnv}); ` +
+      `Ghatरक्षक API listening on port ${config.port} (${config.nodeEnv}); ` +
         `${dataContext.importSummary.totalRecords} records loaded.`,
     );
   });
@@ -29,6 +29,6 @@ async function start() {
 }
 
 start().catch((err) => {
-  console.error('Failed to start GhatWatch API:', err.message);
+  console.error('Failed to start Ghatरक्षक API:', err.message);
   process.exit(1);
 });

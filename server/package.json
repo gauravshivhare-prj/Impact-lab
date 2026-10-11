@@ -1,7 +1,7 @@
 {
-  "name": "ghatwatch-server",
+  "name": "ghatrakshak-server",
   "version": "1.0.0",
-  "description": "GhatWatch AI - Water quality analytics server",
+  "description": "Ghatरक्षक - Water quality analytics server",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
