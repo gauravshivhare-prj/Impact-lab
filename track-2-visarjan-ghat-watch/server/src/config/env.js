@@ -1,0 +1,55 @@
+/**
+ * Runtime configuration.
+ * The Cerebras API key is deliberately kept out of this object so it can never be
+ * logged or serialised by accident; read it with getCerebrasApiKey() at call time.
+ */
+
+const DEFAULT_PORT = 5000;
+const DEFAULT_DEV_CLIENT_ORIGIN = 'http://localhost:5173';
+const DEFAULT_CEREBRAS_TIMEOUT_MS = 20000;
+
+function parseInteger(name, value, { min, max, fallback }) {
+  if (value === undefined || value === '') return fallback;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+    throw new Error(`${name} must be an integer between ${min} and ${max}.`);
+  }
+  return parsed;
+}
+
+function parseOrigins(value, isProduction) {
+  if (!value) {
+    if (isProduction) throw new Error('CLIENT_ORIGIN must be set when NODE_ENV=production.');
+    return [DEFAULT_DEV_CLIENT_ORIGIN];
+  }
+  return value.split(',').map((origin) => {
+    try {
+      return new URL(origin.trim()).origin;
+    } catch {
+      throw new Error('CLIENT_ORIGIN must be a comma-separated list of URL origins.');
+    }
+  });
+}
+
+export function loadEnv(source = process.env) {
+  const nodeEnv = source.NODE_ENV || 'development';
+  const isProduction = nodeEnv === 'production';
+
+  return Object.freeze({
+    nodeEnv,
+    isProduction,
+    port: parseInteger('PORT', source.PORT, { min: 1, max: 65535, fallback: DEFAULT_PORT }),
+    clientOrigins: parseOrigins(source.CLIENT_ORIGIN, isProduction),
+    trustProxy: parseInteger('TRUST_PROXY', source.TRUST_PROXY, { min: 0, max: 10, fallback: 0 }),
+    cerebrasModel: source.CEREBRAS_MODEL?.trim() || null,
+    cerebrasTimeoutMs: parseInteger('CEREBRAS_TIMEOUT_MS', source.CEREBRAS_TIMEOUT_MS, {
+      min: 1000,
+      max: 60000,
+      fallback: DEFAULT_CEREBRAS_TIMEOUT_MS,
+    }),
+  });
+}
+
+export function getCerebrasApiKey(source = process.env) {
+  return source.CEREBRAS_API_KEY?.trim() || null;
+}
