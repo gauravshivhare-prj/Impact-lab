@@ -697,7 +697,7 @@ export const GhatMap: React.FC<GhatMapProps> = ({
               <span>All 7 Immersion Locations — Coordinate Register</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Verified GPS telemetry and NGT compliance status. Click any row to fly to site.
+              Approximate locations from online mapping sources. Click any row to fly to site.
             </p>
           </div>
 

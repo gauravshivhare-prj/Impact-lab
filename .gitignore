@@ -12,3 +12,9 @@ coverage/
 # Python
 engine/venv/
 .venv/
+
+# Local SQLite database (auth sessions, users)
+server/data/
+*.db
+*.db-shm
+*.db-wal

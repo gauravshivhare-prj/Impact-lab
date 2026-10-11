@@ -4,13 +4,18 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cookieParser from 'cookie-parser';
 import ghatRoutes from './routes/ghat.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import scenarioRoutes from './routes/scenario.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { createReportRoutes } from './routes/report.routes.js';
 import { createRiskRoutes } from './routes/risk.routes.js';
 import { createApiRateLimiter } from './middleware/rateLimit.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { sessionMiddleware } from './middleware/auth.js';
+import { getDatabase } from './db/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +27,9 @@ export const API_PREFIX = '/api/v1';
  */
 export function createApp({ config, dataContext, fetchImpl }) {
   const app = express();
+
+  // Initialize database
+  getDatabase();
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
@@ -54,21 +62,33 @@ export function createApp({ config, dataContext, fetchImpl }) {
   app.use(
     cors({
       origin: config.clientOrigins.includes('*') ? true : config.clientOrigins,
-      methods: ['GET', 'POST'],
+      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
       allowedHeaders: ['Content-Type', 'Accept'],
+      credentials: true,
     }),
   );
   app.use(express.json({ limit: '10kb' }));
+  app.use(cookieParser());
+  app.use(sessionMiddleware);
   app.use(API_PREFIX, createApiRateLimiter());
 
+  // Health check (unauthenticated)
   app.get(`${API_PREFIX}/health`, (req, res) => {
     res.json({ data: { status: 'ok' }, meta: {} });
   });
+
+  // Authentication routes (mostly unauthenticated)
+  app.use(`${API_PREFIX}/auth`, authRoutes);
+
+  // Public data routes (read-only, no auth required for now)
   app.use(`${API_PREFIX}/ghats`, ghatRoutes);
   app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
   app.use(`${API_PREFIX}/scenarios`, scenarioRoutes);
   app.use(`${API_PREFIX}/reports`, createReportRoutes());
   app.use(`${API_PREFIX}/risk`, createRiskRoutes({ engineUrl: config.engineUrl, fetchImpl }));
+
+  // Admin routes (requires administrator role)
+  app.use(`${API_PREFIX}/admin`, adminRoutes);
 
   // Serve static client assets in production if client/dist exists
   const clientDistPath = path.resolve(__dirname, '../../client/dist');

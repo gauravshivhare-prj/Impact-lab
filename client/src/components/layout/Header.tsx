@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Globe,
   Calendar,
-  ChevronDown,
   Home,
   Map,
   BarChart2,
@@ -14,8 +13,11 @@ import {
   Menu,
   X,
   Check,
+  ChevronDown,
+  LogOut,
 } from 'lucide-react';
 import type { NavItemKey } from './Sidebar';
+import { useAuth } from '../../contexts/AuthContext';
 
 export interface YearOption {
   value: string;
@@ -145,6 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [internalSelectedYear, setInternalSelectedYear] = useState('all');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { logout, isDemoMode, exitDemoMode } = useAuth();
 
   const activeYear = selectedYear ?? internalSelectedYear;
   const currentOption =
@@ -176,6 +179,14 @@ export const Header: React.FC<HeaderProps> = ({
     setInternalSelectedYear(val);
     onSelectYear?.(val);
     setIsYearDropdownOpen(false);
+  };
+
+  const handleLogout = async () => {
+    if (isDemoMode) {
+      exitDemoMode();
+    } else {
+      await logout();
+    }
   };
 
   return (
@@ -342,6 +353,16 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
           </button>
 
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200/90 hover:border-rose-200 rounded-xl px-3 py-2 shadow-2xs transition-colors"
+            title={language === 'hi' ? 'लॉग आउट' : 'Logout'}
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>{language === 'hi' ? 'लॉग आउट' : 'Logout'}</span>
+          </button>
+
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -406,9 +427,22 @@ export const Header: React.FC<HeaderProps> = ({
               ))}
             </div>
           </div>
+
+          {/* Mobile Logout */}
+          <div className="pt-2 mt-2 border-t border-slate-200">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleLogout();
+              }}
+              className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-rose-600 hover:bg-rose-50 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>{language === 'hi' ? 'लॉग आउट' : 'Logout'}</span>
+            </button>
+          </div>
         </div>
       )}
     </header>
   );
 };
-

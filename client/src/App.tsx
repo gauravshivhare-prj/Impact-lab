@@ -13,9 +13,14 @@ import { DataQualityPage } from './pages/DataQualityPage';
 import { RiskScreeningPage } from './pages/RiskScreeningPage';
 import { BriefingPage } from './pages/BriefingPage';
 import { MethodologyPage } from './pages/MethodologyPage';
+import { LoginPage } from './pages/LoginPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import type { Measurement, GhatPriority } from './types';
+import { Loader2 } from 'lucide-react';
 
-export function App() {
+function AppContent() {
+  const { isLoading: authLoading, isAuthenticated, user } = useAuth();
   const [currentTab, setCurrentTab] = useState<NavItemKey>('overview');
   const [selectedGhat, setSelectedGhat] = useState<string>('Bairagarh (Sant Hirdaram) kund');
   const [evidenceInitialSite, setEvidenceInitialSite] = useState<string>('all');
@@ -26,7 +31,7 @@ export function App() {
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [dataSource, setDataSource] = useState<'loading' | 'api' | 'embedded'>('loading');
 
-  // Prefer live data from the Express API; fall back to the embedded dataset if it is unreachable.
+  // Load data from API
   useEffect(() => {
     let cancelled = false;
     dataService.loadFromApi().then((loaded) => {
@@ -79,17 +84,48 @@ export function App() {
     setLanguage((prev) => (prev === 'en' ? 'hi' : 'en'));
   };
 
-  if (dataSource === 'loading') {
+  // Show loading state while checking authentication
+  if (authLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 text-sm text-slate-500">
-        Loading ghat monitoring data…
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-teal-600" />
+          <p className="text-sm text-slate-500">
+            {language === 'hi' ? 'प्रमाणीकरण जांच रहा है...' : 'Checking authentication...'}
+          </p>
+        </div>
       </div>
     );
   }
 
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage language={language} />;
+  }
+
+  // Show admin dashboard for administrators
+  if (user?.role === 'administrator') {
+    return <AdminDashboardPage language={language} />;
+  }
+
+  // Show loading state while loading data
+  if (dataSource === 'loading') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-teal-600" />
+          <p className="text-sm text-slate-500">
+            {language === 'hi' ? 'डेटा लोड हो रहा है...' : 'Loading ghat monitoring data...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Municipal Officer Dashboard (main application)
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
-      {/* Top Navigation Header matching mockup */}
+      {/* Top Navigation Header */}
       <Header
         currentTab={currentTab}
         onSelectTab={(tab) => {
@@ -107,7 +143,7 @@ export function App() {
         {dataSource === 'embedded' && currentTab !== 'overview' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 w-full">
             <div className="rounded border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-              The Ghatरक्षक API is not reachable, so the bundled copy of the 2023–2025 dataset is being shown.
+              The GhatRakshak API is not reachable, so the bundled copy of the 2023–2025 dataset is being shown.
             </div>
           </div>
         )}
@@ -138,7 +174,6 @@ export function App() {
         {currentTab !== 'overview' && currentTab !== 'map' && (
           <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full pb-12">
             {currentTab === 'priorities' && (
-
               <GhatPrioritiesPage
                 onSelectGhat={handleOpenGhatDetail}
                 onOpenGhatDetail={handleOpenGhatDetail}
@@ -194,7 +229,7 @@ export function App() {
         language={language}
       />
 
-      {/* Visarjan Ghat Location & Comprehensive Details Modal */}
+      {/* Ghat Location & Details Modal */}
       <GhatDetailModal
         ghat={inspectingGhat}
         isOpen={inspectingGhat !== null}
@@ -205,6 +240,14 @@ export function App() {
         language={language}
       />
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
