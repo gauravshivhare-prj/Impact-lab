@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div>
             <h1 className="font-bold text-slate-900 tracking-tight text-xl leading-tight">
-              GhatWatch
+              Ghatरक्षक
             </h1>
             <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">
               VISARJAN GHAT WATCH

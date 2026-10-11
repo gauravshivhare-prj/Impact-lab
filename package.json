@@ -1,8 +1,8 @@
 {
-  "name": "ghatwatch",
+  "name": "ghatrakshak",
   "private": true,
   "version": "1.0.0",
-  "description": "GhatWatch AI — Visarjan Ghat Watch for Bhopal: React client, Express API and Python risk engine",
+  "description": "Ghatरक्षक — Visarjan Ghat Watch for Bhopal: React client, Express API and Python risk engine",
   "scripts": {
     "install:all": "npm install && npm --prefix server install && npm --prefix client install && python -m pip install -r engine/requirements.txt",
     "dev": "concurrently -k -n api,engine,client -c blue,magenta,green \"npm:dev:server\" \"npm:dev:engine\" \"npm:dev:client\"",

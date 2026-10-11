@@ -104,7 +104,7 @@ export function App() {
         {dataSource === 'embedded' && currentTab !== 'overview' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 w-full">
             <div className="rounded border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-              The GhatWatch API is not reachable, so the bundled copy of the 2023–2025 dataset is being shown.
+              The Ghatरक्षक API is not reachable, so the bundled copy of the 2023–2025 dataset is being shown.
             </div>
           </div>
         )}

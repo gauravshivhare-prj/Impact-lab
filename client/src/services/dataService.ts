@@ -44,7 +44,7 @@ class DataService {
       this.measurements = records.map((raw, idx) => parseAndValidateRecord(raw, idx));
       return true;
     } catch (err) {
-      console.warn('GhatWatch API unavailable, using embedded dataset:', err);
+      console.warn('Ghatरक्षक API unavailable, using embedded dataset:', err);
       return false;
     }
   }
@@ -180,7 +180,7 @@ class DataService {
     };
   }
 
-  public exportMeasurementsToCsv(measurements: Measurement[], filename = 'ghatwatch_measurements.csv'): void {
+  public exportMeasurementsToCsv(measurements: Measurement[], filename = 'ghatrakshak_measurements.csv'): void {
     const headers = [
       'Site',
       'Water Body',

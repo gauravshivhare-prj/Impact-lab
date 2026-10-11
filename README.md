@@ -1,4 +1,4 @@
-# GhatWatch — Visarjan Ghat Watch (Bhopal)
+# Ghatरक्षक — Visarjan Ghat Watch (Bhopal)
 
 One project, three services:
 

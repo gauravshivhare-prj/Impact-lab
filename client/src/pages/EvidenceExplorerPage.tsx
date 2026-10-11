@@ -104,7 +104,7 @@ export const EvidenceExplorerPage: React.FC<EvidenceExplorerPageProps> = ({
   const handleExportCsv = () => {
     dataService.exportMeasurementsToCsv(
       filteredRecords,
-      `ghatwatch_evidence_${siteFilter !== 'all' ? siteFilter.replace(/\s+/g, '_') : 'all'}.csv`
+      `ghatrakshak_evidence_${siteFilter !== 'all' ? siteFilter.replace(/\s+/g, '_') : 'all'}.csv`
     );
   };
 

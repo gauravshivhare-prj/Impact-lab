@@ -1,6 +1,6 @@
-# GhatWatch AI — Express API
+# Ghatरक्षक — Express API
 
-Node.js + Express REST API for GhatWatch AI. Contract: [`docs/API_CONTRACT.md`](../docs/API_CONTRACT.md).
+Node.js + Express REST API for Ghatरक्षक. Contract: [`docs/API_CONTRACT.md`](../docs/API_CONTRACT.md).
 
 ## Run it
 

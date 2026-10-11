@@ -96,26 +96,19 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           onClick={() => onSelectTab('overview')}
           className="flex items-center gap-2.5 cursor-pointer flex-shrink-0 group"
-          title="GhatWatch - Home Overview"
+          title="Ghatरक्षक - Home Overview"
         >
-          {/* Custom Teal Water Waves Icon */}
-          <div className="text-teal-600 flex items-center justify-center p-1 rounded-lg group-hover:bg-teal-50 transition-colors">
-            <svg
-              className="w-6 h-6 stroke-current"
-              viewBox="0 0 24 24"
-              fill="none"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-              <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-              <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
-            </svg>
-          </div>
+          {/* Government of Madhya Pradesh / MPSeDC logo */}
+          <img
+            src="/images/mp-mpsedc-logo.jpg"
+            alt="Government of Madhya Pradesh and MPSeDC"
+            className="h-9 sm:h-10 w-auto object-contain"
+            width={480}
+            height={230}
+          />
           <div>
             <div className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
-              GhatWatch
+              Ghatरक्षक
             </div>
             <div className="text-[11px] text-slate-400 font-medium tracking-wide">
               BMC • Bhopal
