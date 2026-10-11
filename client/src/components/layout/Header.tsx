@@ -139,9 +139,10 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => onSelectTab(item.key)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all ${
                   isActive
-                    ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                    ? 'bg-teal-50 text-teal-800 border border-teal-200/90 shadow-2xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                 }`}
+
               >
                 <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-teal-600' : 'text-slate-500'}`} />
                 <span>{language === 'hi' ? item.labelHi : item.labelEn}</span>

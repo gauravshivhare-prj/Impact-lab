@@ -11,17 +11,10 @@ import {
   ShieldCheck,
   Scale,
   Eye,
-  Satellite,
-  Map as MapIcon,
-  Mountain,
   Maximize2,
-  Activity,
-  Navigation,
   ChevronDown,
   Search,
-  Radio,
-  CheckCircle2,
-  Droplets,
+  Crosshair,
 } from 'lucide-react';
 
 import type { GhatPriority } from '../../types';
@@ -81,79 +74,109 @@ const LABELS_OVERLAY = {
   maxZoom: 19,
 };
 
-function getPinColor(ghat: GhatPriority, mode: MapLayerMode): { bg: string; border: string; glow: string } {
+function getPinColor(ghat: GhatPriority, mode: MapLayerMode): { bg: string; dot: string } {
   if (mode === 'environmental') {
-    if (ghat.priority === 'high') return { bg: '#e11d48', border: '#fda4af', glow: 'rgba(225, 29, 72, 0.45)' };
-    if (ghat.priority === 'medium') return { bg: '#d97706', border: '#fcd34d', glow: 'rgba(217, 119, 6, 0.45)' };
-    return { bg: '#059669', border: '#6ee7b7', glow: 'rgba(5, 150, 105, 0.45)' };
+    if (ghat.priority === 'high') return { bg: '#e11d48', dot: '#f43f5e' };
+    if (ghat.priority === 'medium') return { bg: '#d97706', dot: '#f59e0b' };
+    return { bg: '#059669', dot: '#10b981' };
   }
   if (mode === 'legal') {
-    if (ghat.legalStatus === 'prohibited') return { bg: '#dc2626', border: '#fca5a5', glow: 'rgba(220, 38, 38, 0.45)' };
-    if (ghat.legalStatus === 'conditional') return { bg: '#d97706', border: '#fcd34d', glow: 'rgba(217, 119, 6, 0.45)' };
-    return { bg: '#059669', border: '#6ee7b7', glow: 'rgba(5, 150, 105, 0.45)' };
+    if (ghat.legalStatus === 'prohibited') return { bg: '#dc2626', dot: '#ef4444' };
+    if (ghat.legalStatus === 'conditional') return { bg: '#d97706', dot: '#f59e0b' };
+    return { bg: '#059669', dot: '#10b981' };
   }
   // coordinate
-  if (ghat.coordinateStatus === 'verified') return { bg: '#0d9488', border: '#5eead4', glow: 'rgba(13, 148, 136, 0.45)' };
-  return { bg: '#f59e0b', border: '#fde68a', glow: 'rgba(245, 158, 11, 0.45)' };
+  if (ghat.coordinateStatus === 'verified') return { bg: '#0d9488', dot: '#14b8a6' };
+  return { bg: '#f59e0b', dot: '#fbbf24' };
 }
 
 function createMarkerIcon(ghat: GhatPriority, mode: MapLayerMode, isActive: boolean): L.DivIcon {
-  const { bg, border, glow } = getPinColor(ghat, mode);
-  const size = isActive ? 44 : 34;
+  const { dot } = getPinColor(ghat, mode);
 
-  return L.divIcon({
-    className: 'custom-ghat-marker',
-    html: `
-      <div style="
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: ${size}px;
-        height: ${size}px;
-        background: linear-gradient(135deg, ${bg}, ${bg}ee);
-        color: #ffffff;
-        font-weight: 800;
-        font-size: ${isActive ? 15 : 12}px;
-        font-family: ui-monospace, 'Cascadia Code', monospace;
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        box-shadow: 0 4px 14px ${glow}, 0 2px 6px rgba(0,0,0,0.4);
-        border: ${isActive ? '3px solid #ffffff' : `2px solid ${border}`};
-        cursor: pointer;
-        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      ">
-        <span style="transform: rotate(45deg); display: block; line-height: 1;">${ghat.rank}</span>
-      </div>
-      ${
-        isActive
-          ? `<div style="
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.9);
-            color: #f8fafc;
-            font-size: 11px;
+  if (isActive) {
+    return L.divIcon({
+      className: 'custom-ghat-marker active-marker',
+      html: `
+        <div style="display: flex; align-items: center; position: relative; cursor: pointer;">
+          <div style="
+            width: 28px;
+            height: 28px;
+            background: #f43f5e;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 5px rgba(244, 63, 94, 0.4), 0 4px 12px rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 12px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+          ">
+            ${ghat.rank}
+          </div>
+          <div style="
+            margin-left: 8px;
+            background: #ffffff;
+            color: #0f172a;
             font-family: system-ui, -apple-system, sans-serif;
+            font-size: 11px;
             font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 6px;
+            padding: 4px 10px;
+            border-radius: 8px;
             white-space: nowrap;
-            pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+            border: 1px solid rgba(0,0,0,0.08);
             letter-spacing: -0.01em;
           ">
-            #${ghat.rank} ${ghat.site.length > 24 ? ghat.site.substring(0, 24) + '…' : ghat.site}
-          </div>`
-          : ''
-      }
+            ${ghat.site}
+          </div>
+        </div>
+      `,
+      iconSize: [220, 32],
+      iconAnchor: [14, 16],
+      popupAnchor: [0, -20],
+    });
+  }
+
+  // Inactive marker: colored dot with label matching screenshot
+  const shortName = ghat.site.replace(' kund', '').replace(' (Sant Hirdaram)', '');
+
+  return L.divIcon({
+    className: 'custom-ghat-marker inactive-marker',
+    html: `
+      <div style="display: flex; align-items: center; position: relative; cursor: pointer; opacity: 0.95;">
+        <div style="
+          width: 18px;
+          height: 18px;
+          background: ${dot};
+          border: 2px solid #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+          flex-shrink: 0;
+        "></div>
+        <div style="
+          margin-left: 6px;
+          background: rgba(15, 23, 42, 0.82);
+          color: #ffffff;
+          font-family: system-ui, -apple-system, sans-serif;
+          font-size: 10px;
+          font-weight: 600;
+          padding: 2px 6px;
+          border-radius: 5px;
+          white-space: nowrap;
+          backdrop-filter: blur(4px);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.1);
+        ">
+          ${shortName}
+        </div>
+      </div>
     `,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size],
-    popupAnchor: [0, -(size + 6)],
+    iconSize: [160, 24],
+    iconAnchor: [9, 12],
+    popupAnchor: [0, -16],
   });
 }
 
@@ -179,7 +202,6 @@ export const GhatMap: React.FC<GhatMapProps> = ({
   const [copiedCoords, setCopiedCoords] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
   const [lakeFilter, setLakeFilter] = useState<'all' | 'upper' | 'lower' | 'shahpura'>('all');
-  const [showLegend, setShowLegend] = useState(true);
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -188,13 +210,10 @@ export const GhatMap: React.FC<GhatMapProps> = ({
 
     const map = L.map(mapContainerRef.current, {
       center: [23.245, 77.41],
-      zoom: 12,
+      zoom: 12.5,
       zoomControl: false,
       attributionControl: true,
     });
-
-    // Custom zoom control position
-    L.control.zoom({ position: 'topright' }).addTo(map);
 
     // Initial tile layer — satellite
     const cfg = TILE_LAYERS['satellite'];
@@ -213,13 +232,12 @@ export const GhatMap: React.FC<GhatMapProps> = ({
     labelsLayerRef.current = labelsLayer;
     mapInstanceRef.current = map;
 
-    // Critical fix: ResizeObserver ensures Leaflet never leaves unrendered dark voids
+    // ResizeObserver ensures Leaflet never leaves unrendered gaps
     const resizeObserver = new ResizeObserver(() => {
       map.invalidateSize();
     });
     resizeObserver.observe(mapContainerRef.current);
 
-    // Invalidation timers for initial layout transitions
     const t1 = setTimeout(() => map.invalidateSize(), 100);
     const t2 = setTimeout(() => map.invalidateSize(), 400);
 
@@ -287,21 +305,6 @@ export const GhatMap: React.FC<GhatMapProps> = ({
         zIndexOffset: isActive ? 1000 : 0,
       }).addTo(map);
 
-      // Rich tooltip
-      marker.bindTooltip(
-        `<div style="font-family: system-ui, -apple-system, sans-serif; padding: 4px 6px;">
-          <div style="font-weight: 800; font-size: 13px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
-            <span style="background: #0f172a; color: white; border-radius: 4px; padding: 1px 5px; font-size: 10px;">#${ghat.rank}</span>
-            <span>${ghat.site}</span>
-          </div>
-          <div style="font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;">${ghat.waterBody}</div>
-          <div style="font-size: 10px; color: #0d9488; font-family: ui-monospace, monospace; font-weight: 600; margin-top: 2px;">
-            ${ghat.latitude.toFixed(5)}°N, ${ghat.longitude.toFixed(5)}°E
-          </div>
-        </div>`,
-        { direction: 'top', offset: [0, -32], className: 'ghat-tooltip' }
-      );
-
       marker.on('click', () => {
         setActiveGhat(ghat);
         map.flyTo([ghat.latitude, ghat.longitude], 15.5, { duration: 1.0, easeLinearity: 0.25 });
@@ -343,7 +346,7 @@ export const GhatMap: React.FC<GhatMapProps> = ({
   const handleResetBhopalView = () => {
     const map = mapInstanceRef.current;
     if (map) {
-      map.flyTo([23.245, 77.41], 12, { duration: 1.2 });
+      map.flyTo([23.245, 77.41], 12.5, { duration: 1.2 });
     }
   };
 
@@ -372,125 +375,126 @@ export const GhatMap: React.FC<GhatMapProps> = ({
     });
   }, [ghats, searchFilter, lakeFilter]);
 
-  const BasemapIcon = basemap === 'satellite' ? Satellite : basemap === 'street' ? MapIcon : Mountain;
-
   return (
     <div className="space-y-4">
-      {/* Sleek Modern Controls Toolbar */}
-      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-3.5">
-        {/* Left: Data Layer Mode Buttons */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider pr-1">
-            <Layers className="w-4 h-4 text-teal-600" />
-            <span>Layer:</span>
+      {/* Controls Toolbar matching exact layout of screenshot */}
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-4">
+        {/* Section 1: Data Layer */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+            <Layers className="w-3.5 h-3.5 text-teal-600" />
+            <span>Data Layer</span>
           </div>
-
-          <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 gap-1 text-xs">
-            <button
-              onClick={() => setActiveLayerMode('environmental')}
-              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                activeLayerMode === 'environmental'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 text-rose-500" />
-              <span>Environmental Risk</span>
-            </button>
-
-            <button
-              onClick={() => setActiveLayerMode('legal')}
-              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                activeLayerMode === 'legal'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Scale className="w-3.5 h-3.5 text-amber-500" />
-              <span>NGT Compliance</span>
-            </button>
-
-            <button
-              onClick={() => setActiveLayerMode('coordinate')}
-              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
-                activeLayerMode === 'coordinate'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Navigation className="w-3.5 h-3.5 text-teal-600" />
-              <span>GPS Precision</span>
-            </button>
+          <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/70 gap-1 text-xs">
+            {(['environmental', 'legal', 'coordinate'] as MapLayerMode[]).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setActiveLayerMode(mode)}
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                  activeLayerMode === mode
+                    ? 'bg-white text-teal-800 shadow-2xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {mode === 'environmental' ? 'Environmental' : mode === 'legal' ? 'NGT Legal' : 'GPS Precision'}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Right: Basemap Selector + Quick Ghat Fly + Reset */}
-        <div className="flex items-center gap-2.5 flex-wrap justify-between xl:justify-end">
-          {/* Basemap switcher */}
-          <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 gap-0.5 text-xs">
-            {(['satellite', 'street', 'terrain'] as BasemapMode[]).map((bm) => {
-              const Icon = bm === 'satellite' ? Satellite : bm === 'street' ? MapIcon : Mountain;
-              const isActive = basemap === bm;
-              return (
-                <button
-                  key={bm}
-                  onClick={() => setBasemap(bm)}
-                  title={TILE_LAYERS[bm].desc}
-                  className={`px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all capitalize ${
-                    isActive
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-teal-600' : 'text-slate-400'}`} />
-                  <span className="hidden sm:inline">{TILE_LAYERS[bm].label}</span>
-                </button>
-              );
-            })}
+        {/* Section 2: Map View */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+            <Compass className="w-3.5 h-3.5 text-teal-600" />
+            <span>Map View</span>
           </div>
+          <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/70 gap-1 text-xs">
+            {(['satellite', 'street', 'terrain'] as BasemapMode[]).map((bm) => (
+              <button
+                key={bm}
+                onClick={() => setBasemap(bm)}
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-all capitalize ${
+                  basemap === bm
+                    ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {TILE_LAYERS[bm].label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {/* Quick Ghat Dropdown */}
-          <div className="relative">
-            <select
-              value={activeGhat?.site || ''}
-              onChange={(e) => {
-                const g = ghats.find((item) => item.site === e.target.value);
-                if (g) handleSelectGhatFromList(g);
-              }}
-              className="text-xs font-semibold bg-white border border-slate-200/90 rounded-xl pl-3 pr-8 py-2 text-slate-800 shadow-2xs hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500/30 appearance-none cursor-pointer"
+        {/* Section 3 & 4: Select Ghat / Site + Reset Button */}
+        <div className="space-y-1 flex-1 max-w-md">
+          <div className="text-xs font-bold text-slate-700">
+            Select Ghat / Site
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
+                <MapPin className="w-3.5 h-3.5 text-teal-600" />
+              </div>
+              <select
+                value={activeGhat?.site || ''}
+                onChange={(e) => {
+                  const g = ghats.find((item) => item.site === e.target.value);
+                  if (g) handleSelectGhatFromList(g);
+                }}
+                className="w-full text-xs font-semibold bg-white border border-slate-200/90 rounded-xl pl-8 pr-8 py-2 text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-teal-500/20 appearance-none cursor-pointer"
+              >
+                {ghats.map((g) => (
+                  <option key={g.site} value={g.site}>
+                    #{g.rank} {g.site}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            <button
+              onClick={handleResetBhopalView}
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl px-3.5 py-2 shadow-2xs transition-colors whitespace-nowrap"
+              title="Reset camera to Bhopal basin"
             >
-              {ghats.map((g) => (
-                <option key={g.site} value={g.site}>
-                  #{g.rank} {g.site} ({g.waterBody.replace(' Lake', '')})
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <span>Reset</span>
+            </button>
           </div>
-
-          {/* Reset View Button */}
-          <button
-            onClick={handleResetBhopalView}
-            className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-2 shadow-2xs transition-colors"
-            title="Reset camera to full Bhopal basin"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span className="hidden sm:inline">Recenter</span>
-          </button>
         </div>
       </div>
 
       {/* Main Map + Inspector Panel Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         {/* Left Column: Leaflet Map Container */}
-        <div className="lg:col-span-7 xl:col-span-8 rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden relative flex flex-col min-h-[580px] lg:min-h-[640px] bg-slate-950">
-          {/* Top-Left GIS HUD Pill */}
-          <div className="absolute top-3.5 left-3.5 z-[1000] flex items-center gap-2 pointer-events-none">
-            <div className="bg-slate-950/85 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-xl border border-white/10 shadow-lg flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <BasemapIcon className="w-3.5 h-3.5 text-teal-300" />
-              <span>{TILE_LAYERS[basemap].desc}</span>
-            </div>
+        <div className="lg:col-span-7 xl:col-span-8 rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden relative flex flex-col min-h-[580px] lg:min-h-[640px] bg-slate-950 isolate">
+          {/* Top-Right Map Controls: Zoom in, Zoom out, Recenter Target */}
+          <div className="absolute top-4 right-4 z-20 flex flex-col bg-white rounded-xl shadow-md border border-slate-200/90 overflow-hidden">
+            <button
+              onClick={() => mapInstanceRef.current?.zoomIn()}
+              className="w-8 h-8 flex items-center justify-center text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-base border-b border-slate-200/80 cursor-pointer"
+              title="Zoom In"
+            >
+              +
+            </button>
+            <button
+              onClick={() => mapInstanceRef.current?.zoomOut()}
+              className="w-8 h-8 flex items-center justify-center text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors font-bold text-base border-b border-slate-200/80 cursor-pointer"
+              title="Zoom Out"
+            >
+              −
+            </button>
+            <button
+              onClick={() => {
+                if (activeGhat && mapInstanceRef.current) {
+                  mapInstanceRef.current.flyTo([activeGhat.latitude, activeGhat.longitude], 15.5, { duration: 1 });
+                }
+              }}
+              className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Center on active ghat"
+            >
+              <Crosshair className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Map DOM Element */}
@@ -499,108 +503,41 @@ export const GhatMap: React.FC<GhatMapProps> = ({
             className="w-full h-full flex-1 min-h-[580px] lg:min-h-[640px]"
           />
 
-          {/* Bottom-Left Floating GIS HUD Legend */}
-          <div className="absolute bottom-4 left-4 z-[1000]">
-            {showLegend ? (
-              <div className="bg-slate-950/85 backdrop-blur-md text-white p-3.5 rounded-2xl border border-white/10 shadow-xl text-xs space-y-2 max-w-[270px]">
-                <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-1.5">
-                  <div className="font-bold text-[10px] uppercase tracking-wider text-teal-300 flex items-center gap-1.5">
-                    <Radio className="w-3 h-3 text-teal-400" />
-                    {activeLayerMode === 'environmental' && 'Environmental Risk Signal'}
-                    {activeLayerMode === 'legal' && 'NGT Compliance Status'}
-                    {activeLayerMode === 'coordinate' && 'GPS Precision Benchmark'}
-                  </div>
-                  <button
-                    onClick={() => setShowLegend(false)}
-                    className="text-slate-400 hover:text-white text-[10px] font-mono px-1"
-                    title="Minimize legend"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                {activeLayerMode === 'environmental' && (
-                  <div className="space-y-1.5 text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50 flex-shrink-0" />
-                      <span className="text-slate-200">High Risk (DO Collapse &gt;40%)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-xs shadow-amber-500/50 flex-shrink-0" />
-                      <span className="text-slate-200">Medium (Elevated BOD / Excursion)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50 flex-shrink-0" />
-                      <span className="text-slate-200">Lower Priority (DO ≥ 5.0 mg/l)</span>
-                    </div>
-                  </div>
-                )}
-
-                {activeLayerMode === 'legal' && (
-                  <div className="space-y-1.5 text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0" />
-                      <span className="text-slate-200">Prohibited in Natural Lake</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0" />
-                      <span className="text-slate-200">Conditional in Kund</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                      <span className="text-slate-200">Authorised Kund Facility</span>
-                    </div>
-                  </div>
-                )}
-
-                {activeLayerMode === 'coordinate' && (
-                  <div className="space-y-1.5 text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-teal-400 flex-shrink-0" />
-                      <span className="text-slate-200">GPS Verified (On-ground match)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0" />
-                      <span className="text-slate-200">Approximate (Field check needed)</span>
-                    </div>
-                  </div>
-                )}
+          {/* Bottom-Left Floating Legend matching mockup */}
+          <div className="absolute bottom-4 left-4 z-20 bg-black/75 backdrop-blur-md rounded-xl p-3 text-white border border-white/10 shadow-lg text-xs space-y-2 max-w-[200px]">
+            <div className="space-y-1.5 text-[11px]">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs shadow-rose-500/50 flex-shrink-0" />
+                <span className="text-slate-200 font-medium">High Priority</span>
               </div>
-            ) : (
-              <button
-                onClick={() => setShowLegend(true)}
-                className="bg-slate-950/85 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-xl border border-white/10 shadow-lg flex items-center gap-1.5 hover:bg-slate-900 transition-colors"
-              >
-                <Radio className="w-3 h-3 text-teal-400" />
-                <span>Show Legend</span>
-              </button>
-            )}
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-xs shadow-amber-400/50 flex-shrink-0" />
+                <span className="text-slate-200 font-medium">Medium Priority</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-xs shadow-emerald-400/50 flex-shrink-0" />
+                <span className="text-slate-200 font-medium">Low Priority</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Inspector Panel (Executive Geospatial Brief) */}
+        {/* Right Column: Inspector Panel matching screenshot exactly */}
         <div className="lg:col-span-5 xl:col-span-4 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6 flex flex-col justify-between space-y-4">
           {activeGhat ? (
             <div className="space-y-4 flex-1">
               {/* Header Box */}
-              <div className="border-b border-slate-100 pb-3.5">
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-900 text-white">
-                      RANK #{activeGhat.rank} OF 7
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600">
-                      {activeGhat.waterBody}
-                    </span>
-                  </div>
-
-                  <span className="text-[11px] text-teal-600 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
-                    Active Site
+              <div className="border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="bg-rose-50 text-rose-600 font-bold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide border border-rose-100/80">
+                    RANK #{activeGhat.rank}
+                  </span>
+                  <span className="text-slate-400 font-bold tracking-wider uppercase text-[11px]">
+                    {activeGhat.waterBody}
                   </span>
                 </div>
 
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight leading-snug">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 mt-2 leading-tight">
                   {activeGhat.site}
                 </h2>
 
@@ -611,185 +548,147 @@ export const GhatMap: React.FC<GhatMapProps> = ({
                 </div>
               </div>
 
-              {/* Monospace GPS Coordinates Card */}
-              <div className="p-3.5 bg-slate-900 text-slate-100 rounded-xl border border-slate-800 shadow-2xs space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <span className="flex items-center gap-1.5 text-teal-400">
-                    <Compass className="w-3.5 h-3.5" />
-                    Verified GPS Coordinates
+              {/* GPS Coordinates Box */}
+              <div className="p-3.5 sm:p-4 bg-slate-50/90 rounded-2xl border border-slate-200/70 space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <span className="flex items-center gap-1.5 text-teal-700">
+                    <Compass className="w-3.5 h-3.5 text-teal-600" />
+                    GPS Coordinates
                   </span>
                   <button
                     onClick={handleCopyCoordinates}
-                    className="text-xs text-teal-300 hover:text-white flex items-center gap-1 font-semibold transition-colors bg-white/10 px-2 py-0.5 rounded-md"
-                    title="Copy latitude and longitude"
+                    className="text-xs text-teal-600 hover:text-teal-800 flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                   >
                     {copiedCoords ? (
                       <>
-                        <Check className="w-3 h-3 text-emerald-400" />
+                        <Check className="w-3 h-3 text-emerald-600" />
                         <span>Copied!</span>
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3 h-3" />
+                        <Copy className="w-3 h-3 text-teal-600" />
                         <span>Copy</span>
                       </>
                     )}
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-1 font-mono text-xs font-bold text-white">
-                  <div className="bg-white/5 p-2 rounded-lg border border-white/5">
-                    <span className="text-[10px] text-slate-400 block font-normal">LATITUDE</span>
-                    <span className="text-teal-300 text-sm">{activeGhat.latitude.toFixed(6)}° N</span>
-                  </div>
-                  <div className="bg-white/5 p-2 rounded-lg border border-white/5">
-                    <span className="text-[10px] text-slate-400 block font-normal">LONGITUDE</span>
-                    <span className="text-teal-300 text-sm">{activeGhat.longitude.toFixed(6)}° E</span>
-                  </div>
+                <div className="font-mono text-sm font-bold text-slate-800 pt-0.5">
+                  <div>{activeGhat.latitude.toFixed(6)}° N</div>
+                  <div>{activeGhat.longitude.toFixed(6)}° E</div>
                 </div>
 
                 {activeGhat.locationDescription && (
-                  <p className="text-[11px] text-slate-300 leading-relaxed pt-1.5 border-t border-slate-800">
+                  <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-200/70">
                     {activeGhat.locationDescription}
                   </p>
                 )}
               </div>
 
-              {/* NGT Legal Directive Callout */}
-              <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs space-y-1">
-                <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                  <Scale className="w-3.5 h-3.5 text-amber-700" />
-                  <span>NGT Directive Mandate</span>
-                </div>
-                <p className="text-amber-950/90 text-[11px] leading-relaxed">
-                  {activeGhat.legalStatus === 'prohibited'
-                    ? 'Direct idol immersion into this natural lake is strictly banned by NGT orders. BMC must enforce complete redirection to offline artificial kunds.'
-                    : activeGhat.legalStatus === 'authorised'
-                    ? 'Approved artificial kund facility, engineered exclusively for idol containment outside natural water bodies.'
-                    : 'Immersion permitted only inside designated artificial kund tank; direct natural lake entry strictly prohibited.'}
-                </p>
-              </div>
-
-              {/* Physical Containment Infrastructure Callout */}
-              <div className="p-3 rounded-xl bg-teal-50/70 border border-teal-200/80 text-xs space-y-1">
-                <div className="flex items-center gap-1.5 font-bold text-teal-900">
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
-                  <span>Visarjan Infrastructure</span>
-                </div>
-                <p className="text-teal-950/90 text-[11px] leading-relaxed">
-                  {activeGhat.site.toLowerCase().includes('bairagarh')
-                    ? 'Dedicated artificial kund with concrete containment walls and heavy sediment catchment trap.'
-                    : activeGhat.site.toLowerCase().includes('prempura')
-                    ? 'High-capacity staging area equipped with hydraulic cranes, barricades, and collection pontoons.'
-                    : 'Masonry ghat facility with temporary barricading and municipal collection crews.'}
-                </p>
-              </div>
-
-              {/* Visual Water Quality Risk Signals */}
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/90 text-xs space-y-2.5">
-                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  <span className="flex items-center gap-1.5">
-                    <Droplets className="w-3.5 h-3.5 text-sky-600" />
-                    Water Quality Signals
+              {/* NGT Directive */}
+              <div className="flex items-start gap-2.5 text-xs text-slate-700">
+                <Scale className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong className="text-slate-900 block font-bold">NGT Directive:</strong>
+                  <span className="text-slate-600 leading-relaxed block mt-0.5">
+                    {activeGhat.legalStatus === 'prohibited'
+                      ? 'Direct immersion into this natural lake is strictly banned by NGT orders. BMC must enforce complete redirection to offline artificial kunds.'
+                      : activeGhat.legalStatus === 'authorised'
+                      ? 'Approved artificial kund facility, engineered exclusively for idol containment outside natural water bodies.'
+                      : 'Immersion permitted only inside designated artificial kund tank; direct lake entry prohibited.'}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">Class B Thresholds</span>
                 </div>
+              </div>
 
-                {/* DO Deficit Gauge */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 font-medium">Dissolved Oxygen Deficit (&lt;5 mg/L):</span>
-                    <span className={`font-mono font-bold ${activeGhat.doExceedanceRate > 30 ? 'text-rose-600' : 'text-emerald-700'}`}>
-                      {activeGhat.doExceedanceRate}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        activeGhat.doExceedanceRate > 30 ? 'bg-rose-500' : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${Math.min(100, Math.max(8, activeGhat.doExceedanceRate))}%` }}
-                    />
-                  </div>
+              {/* Infrastructure */}
+              <div className="flex items-start gap-2.5 text-xs text-slate-700 pt-2 border-t border-slate-100">
+                <ShieldCheck className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong className="text-slate-900 block font-bold">Infrastructure:</strong>
+                  <span className="text-slate-600 leading-relaxed block mt-0.5">
+                    {activeGhat.site.toLowerCase().includes('bairagarh')
+                      ? 'Dedicated artificial kund with concrete walls and sediment catchment trap.'
+                      : activeGhat.site.toLowerCase().includes('prempura')
+                      ? 'High-capacity staging area with hydraulic cranes and collection pontoons.'
+                      : 'Masonry ghat with temporary barricades and mobile disposal teams.'}
+                  </span>
                 </div>
+              </div>
 
-                {/* BOD Exceedance Gauge */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-600 font-medium">Organic BOD Exceedance (&gt;3 mg/L):</span>
-                    <span className={`font-mono font-bold ${activeGhat.bodExceedanceRate > 40 ? 'text-rose-600' : 'text-amber-600'}`}>
-                      {activeGhat.bodExceedanceRate}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        activeGhat.bodExceedanceRate > 40 ? 'bg-rose-500' : 'bg-amber-500'
-                      }`}
-                      style={{ width: `${Math.min(100, Math.max(8, activeGhat.bodExceedanceRate))}%` }}
-                    />
-                  </div>
+              {/* Historical Quality Signals */}
+              <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/70 text-xs space-y-1.5">
+                <div className="font-bold text-slate-700 text-[11px] uppercase tracking-wider">
+                  Historical Quality Signals
+                </div>
+                <div className="flex justify-between text-slate-600 font-mono">
+                  <span>DO deficit (&lt;5 mg/l):</span>
+                  <span className={activeGhat.doExceedanceRate > 0 ? 'text-rose-600 font-bold' : 'text-emerald-700 font-bold'}>
+                    {activeGhat.doExceedanceRate}%
+                  </span>
+                </div>
+                <div className="flex justify-between text-slate-600 font-mono">
+                  <span>BOD excess (&gt;3 mg/l):</span>
+                  <span className={activeGhat.bodExceedanceRate > 40 ? 'text-rose-600 font-bold' : 'text-amber-600 font-bold'}>
+                    {activeGhat.bodExceedanceRate}%
+                  </span>
                 </div>
               </div>
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center py-12 text-slate-400 text-xs text-center gap-2">
               <MapPin className="w-8 h-8 text-slate-300" />
-              <span>Select any pin on the map to inspect location telemetry.</span>
+              <span>Select any pin on the map to inspect location details.</span>
             </div>
           )}
 
-          {/* Action Buttons Hub */}
+          {/* Action Buttons */}
           {activeGhat && (
-            <div className="pt-3 border-t border-slate-100 space-y-2">
-              {/* Primary Action: Full Dossier */}
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
               {onOpenGhatDetail && (
                 <button
                   onClick={() => onOpenGhatDetail(activeGhat)}
-                  className="w-full text-center text-xs font-bold text-white bg-gradient-to-r from-teal-700 to-teal-800 hover:from-teal-800 hover:to-teal-900 py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm shadow-teal-700/20 active:scale-[0.99]"
+                  className="w-full text-center text-xs font-bold text-teal-800 bg-teal-50 hover:bg-teal-100/80 border border-teal-200/80 py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
                 >
-                  <Maximize2 className="w-4 h-4 text-teal-200" />
-                  <span>Full Ghat Dossier &amp; Detailed Specs</span>
+                  <Maximize2 className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Full Ghat Dossier &amp; Specifications</span>
                 </button>
               )}
 
-              {/* Secondary Actions Row */}
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href={activeGhat.googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-center text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 py-2 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Google Earth</span>
-                </a>
+              <a
+                href={activeGhat.googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full text-center text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                <span>Open in Google Maps Satellite</span>
+              </a>
 
+              <div className="flex gap-2">
                 <button
                   onClick={() => onSelectGhat(activeGhat.site)}
-                  className="text-center text-xs font-bold text-slate-800 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 py-2 px-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                  className="flex-1 text-center text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
                 >
-                  <Eye className="w-3.5 h-3.5 text-teal-700" />
+                  <Eye className="w-3.5 h-3.5" />
                   <span>Water Quality</span>
                 </button>
-              </div>
 
-              {onInspectEvidence && (
-                <button
-                  onClick={() => onInspectEvidence(activeGhat.site)}
-                  className="w-full text-center text-xs font-semibold text-teal-800 hover:text-teal-950 bg-teal-50 hover:bg-teal-100/70 border border-teal-200/80 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <Search className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Inspect Measurement Evidence Log</span>
-                </button>
-              )}
+                {onInspectEvidence && (
+                  <button
+                    onClick={() => onInspectEvidence(activeGhat.site)}
+                    className="flex-1 text-center text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <span>View Evidence</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Coordinate Register Table Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+      <div id="coordinate-register-table" className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden scroll-mt-6">
         {/* Table Header with Filters */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -827,7 +726,7 @@ export const GhatMap: React.FC<GhatMapProps> = ({
                 <button
                   key={filter.id}
                   onClick={() => setLakeFilter(filter.id)}
-                  className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors ${
+                  className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
                     lakeFilter === filter.id
                       ? 'bg-slate-900 text-white shadow-2xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -839,7 +738,6 @@ export const GhatMap: React.FC<GhatMapProps> = ({
             </div>
           </div>
         </div>
-
 
         {/* Table Content */}
         <div className="overflow-x-auto">
@@ -927,44 +825,6 @@ export const GhatMap: React.FC<GhatMapProps> = ({
 
       {/* Embedded CSS enhancements for Leaflet UI */}
       <style>{`
-        .ghat-tooltip {
-          background: #ffffff !important;
-          border: 1px solid #cbd5e1 !important;
-          border-radius: 12px !important;
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-          padding: 8px 12px !important;
-          color: #0f172a !important;
-        }
-        .ghat-tooltip::before {
-          display: none !important;
-        }
-        .leaflet-tooltip-top.ghat-tooltip::before {
-          display: block !important;
-          border-top-color: #ffffff !important;
-        }
-        .leaflet-control-zoom {
-          border: none !important;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
-          border-radius: 12px !important;
-          overflow: hidden !important;
-          margin-top: 14px !important;
-          margin-right: 14px !important;
-        }
-        .leaflet-control-zoom a {
-          background-color: rgba(255, 255, 255, 0.95) !important;
-          backdrop-filter: blur(8px) !important;
-          color: #1e293b !important;
-          width: 34px !important;
-          height: 34px !important;
-          line-height: 34px !important;
-          font-size: 15px !important;
-          border-bottom: 1px solid #e2e8f0 !important;
-          transition: all 0.2s ease !important;
-        }
-        .leaflet-control-zoom a:hover {
-          background-color: #ffffff !important;
-          color: #0d9488 !important;
-        }
         .leaflet-control-attribution {
           background: rgba(15, 23, 42, 0.75) !important;
           backdrop-filter: blur(6px) !important;
@@ -981,4 +841,5 @@ export const GhatMap: React.FC<GhatMapProps> = ({
     </div>
   );
 };
+
 

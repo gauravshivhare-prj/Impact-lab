@@ -36,7 +36,7 @@ Report URL: ${measurement.sourceReportUrl}`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[9999] overflow-hidden isolate" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-900/30 transition-opacity"

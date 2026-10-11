@@ -122,19 +122,20 @@ export function App() {
           />
         )}
 
-        {currentTab !== 'overview' && (
-          <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full pb-12">
-            {currentTab === 'map' && (
-              <GhatMapPage
-                selectedSite={selectedGhat}
-                onSelectGhat={handleSelectGhatFromAnywhere}
-                onOpenGhatDetail={handleOpenGhatDetail}
-                onInspectEvidence={(site) => handleNavigateToEvidenceWithSite(site)}
-                language={language}
-              />
-            )}
+        {currentTab === 'map' && (
+          <GhatMapPage
+            selectedSite={selectedGhat}
+            onSelectGhat={handleSelectGhatFromAnywhere}
+            onOpenGhatDetail={handleOpenGhatDetail}
+            onInspectEvidence={(site) => handleNavigateToEvidenceWithSite(site)}
+            language={language}
+          />
+        )}
 
+        {currentTab !== 'overview' && currentTab !== 'map' && (
+          <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full pb-12">
             {currentTab === 'priorities' && (
+
               <GhatPrioritiesPage
                 onSelectGhat={handleOpenGhatDetail}
                 onOpenGhatDetail={handleOpenGhatDetail}

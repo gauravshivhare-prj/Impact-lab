@@ -272,7 +272,7 @@ export const GhatDetailModal: React.FC<GhatDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fade-in isolate"
       role="dialog"
       aria-modal="true"
     >
@@ -283,7 +283,7 @@ export const GhatDetailModal: React.FC<GhatDetailModalProps> = ({
       />
 
       {/* Main Modal Card */}
-      <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-200/90 w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden z-10">
+      <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-200/90 w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden z-10 isolate">
         {/* Modal Header */}
         <div className="px-6 py-4.5 bg-slate-50/90 border-b border-slate-200/80 flex items-start justify-between gap-4 flex-shrink-0">
           <div>
