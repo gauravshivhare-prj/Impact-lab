@@ -1,115 +1,156 @@
-# API Contract
+# API Contract — Express REST API
 
-Freeze these contracts before parallel coding. Names may be adjusted
-once, by agreement, before implementation.
+Base URL during development: `http://localhost:5000/api/v1`
 
-## Conventions
+All responses use JSON. API data should be calculated or loaded by Node.js services. Property names below are the agreed contract; implementation may add optional fields without breaking existing clients.
 
--   Base path: `/api`
--   Format: JSON
--   Coordinates: decimal degrees
--   Missing/uncomputable metrics: `null`, with an explanatory state
-    where useful
--   Legal status: `authorised`, `prohibited`, `conditional`,
-    `not_verified`
--   Environmental priority: `higher_historical_concern`,
-    `moderate_historical_concern`, `lower_observed_concern`,
-    `insufficient_data`
+## Standard response shapes
 
-## Endpoints
-
-### `GET /api/health`
-
-``` json
-{"status":"ok"}
-```
-
-### `GET /api/ghats`
-
-Returns mapped locations for the map and ranking list.
-
-``` json
+Success:
+```json
 {
-  "items": [{
-    "ghat_id": "GHAT_001",
-    "name": "Example location",
-    "latitude": null,
-    "longitude": null,
-    "coordinate_status": "unverified",
-    "environmental_priority": "insufficient_data",
-    "legal_status": "not_verified",
-    "latest_observation_year": null
-  }]
+  "data": {},
+  "meta": {}
 }
 ```
 
-Example only; do not ship placeholder coordinates as real.
-
-### `GET /api/ghats/{ghat_id}/analysis`
-
-Returns a location's parameters, valid sample counts, exceedance rates,
-observations, criteria/source references and limitations.
-
-### `GET /api/rankings`
-
-Returns sorted locations, ranking method/version, score if defined,
-valid sample counts and reason codes. Return `null` rather than
-inventing a score.
-
-### `GET /api/legal-status`
-
-Returns source-backed legal records, including status, authority,
-document title, source URL, applicable clause, scope and verification
-date.
-
-### `POST /api/scenarios`
-
-Example request:
-
-``` json
-{
-  "ghat_id": "GHAT_001",
-  "scenario_type": "additional_monitoring",
-  "assumptions": {"description":"Illustrative scenario; no effect size assumed."}
-}
-```
-
-Example response:
-
-``` json
-{
-  "scenario_type": "additional_monitoring",
-  "is_hypothetical": true,
-  "quantified_effect": null,
-  "result_summary": "Effect cannot be quantified from the supplied data alone.",
-  "assumptions": ["No measured intervention-effectiveness value supplied."],
-  "data_limitations": ["Historical observations do not establish current conditions."]
-}
-```
-
-### `POST /api/brief`
-
-Accepts a location ID, language (`en` or `hi`), validated findings,
-legal status and limitations. Returns brief text, cited source
-references and caveats. The LLM must not calculate the ranking or invent
-sources.
-
-## Error shape
-
-``` json
+Error:
+```json
 {
   "error": {
-    "code": "NOT_FOUND",
-    "message": "The requested location was not found."
+    "code": "VALIDATION_ERROR",
+    "message": "The request could not be validated."
   }
 }
 ```
 
-## Contract rules
+## `GET /ghats`
+Returns the canonical ghat list and verified coordinates.
 
--   Do not use illustrative values as real findings.
--   Include sample counts with rates.
--   Return `null` when a metric cannot be calculated.
--   Include source references where available.
--   Keep legal status independent of environmental priority.
--   ML output includes assumptions and limitations.
+Example:
+```json
+{
+  "data": [
+    {
+      "ghatId": "canonical-ghat-id",
+      "name": "Display name",
+      "latitude": 23.0,
+      "longitude": 77.0,
+      "coordinateStatus": "verified",
+      "legalStatus": "not_verified",
+      "environmentalPriority": "insufficient_data"
+    }
+  ],
+  "meta": { "count": 1 }
+}
+```
+
+`coordinateStatus`: `verified`, `approximate`, `not_verified`. Do not render approximate coordinates as exact.
+
+## `GET /ghats/:ghatId`
+Returns location, legal evidence, summary, observations/aggregates, sources, and caveats.
+
+Example:
+```json
+{
+  "data": {
+    "ghatId": "canonical-ghat-id",
+    "name": "Display name",
+    "legal": {
+      "status": "not_verified",
+      "sourceTitle": null,
+      "sourceUrl": null,
+      "clauseOrOrder": null,
+      "effectiveFrom": null,
+      "effectiveTo": null,
+      "verifiedAt": null
+    },
+    "historicalEvidence": {
+      "startYear": 2023,
+      "endYear": 2025,
+      "sampleCount": 0,
+      "coverage": "insufficient_data",
+      "priority": "insufficient_data",
+      "exceedances": [],
+      "observations": []
+    },
+    "sources": [],
+    "limitations": ["Historical data does not certify current conditions."]
+  }
+}
+```
+
+## `GET /analytics/summary`
+Returns aggregate counts and dataset coverage. Do not include missing values in a pass denominator.
+
+## `GET /analytics/rankings`
+Returns deterministically ranked ghats with:
+- `ghatId`
+- `priority`
+- `score` (nullable if data is insufficient)
+- `explanation`
+- `validSampleCount`
+- `coverage`
+- `observationPeriod`
+- `sourceIds`
+
+Ranking methodology and weights must be documented in code/docs before showing a numeric score. If there is not enough data to support a defensible score, return a category and explanation instead of inventing precision.
+
+## `GET /ghats/:ghatId/sources`
+Returns source metadata and source-page/report references used by that ghat's evidence.
+
+## `POST /scenarios/compare`
+Request:
+```json
+{
+  "ghatId": "canonical-ghat-id",
+  "scenarioType": "hypothetical_monitoring_or_waste_management",
+  "assumptions": {
+    "description": "User-defined assumption",
+    "changedInputs": []
+  }
+}
+```
+The server validates the scenario type and inputs. Response must label the result as hypothetical, return the calculation method and assumptions, and avoid unsupported effectiveness percentages.
+
+## `POST /reports/brief`
+Request:
+```json
+{
+  "ghatId": "canonical-ghat-id",
+  "language": "hi",
+  "includeScenario": false
+}
+```
+`language`: `en` or `hi`.
+
+The Express service fetches validated evidence and calls Cerebras server-side. Do not accept arbitrary user-provided facts as authoritative report data. Return:
+```json
+{
+  "data": {
+    "language": "hi",
+    "brief": "Generated explanation...",
+    "factsUsed": [],
+    "sourceIds": [],
+    "limitations": ["Historical evidence is not a live reading."],
+    "generatedAt": "ISO-8601 timestamp"
+  }
+}
+```
+
+## Status and error codes
+- `400 VALIDATION_ERROR`
+- `404 GHAT_NOT_FOUND`
+- `422 INSUFFICIENT_DATA`
+- `429 RATE_LIMITED`
+- `502 AI_PROVIDER_ERROR`
+- `500 INTERNAL_ERROR`
+
+Never send stack traces, API keys, or internal secrets to the client.
+
+## Shared contract rules
+- `ghatId` must be stable and identical in map, dashboard, observations, and API.
+- Legal status and environmental priority are separate fields.
+- Unknown legal status is `not_verified`, not an empty string or an inferred status.
+- Dates are ISO 8601; units are explicit.
+- Preserve qualifiers such as `BDL` and `ND`.

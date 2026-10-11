@@ -1,116 +1,89 @@
-# Data Dictionary and Data Rules
+# Data Dictionary and Validation Rules
 
-## 1. Water-quality observations
+## Purpose
+Define the canonical fields used by the MERN application. Preserve original source values and provenance; normalised values are additional fields, not replacements for raw data.
 
-Use the actual supplied CSV headers as the source of truth. Map original
-columns to this logical schema without destroying raw values.
+## Ghat
+| Field | Type | Meaning |
+|---|---|---|
+| `ghatId` | string | Stable application ID shared by map, API, and dashboard |
+| `name` | string | Display name from a verified source |
+| `aliases` | string[] | Source-backed alternate spellings |
+| `latitude` | number/null | Latitude only when sourced/verified |
+| `longitude` | number/null | Longitude only when sourced/verified |
+| `coordinateStatus` | enum | `verified`, `approximate`, `not_verified` |
+| `locationSourceId` | string/null | Provenance for coordinates |
 
-  -----------------------------------------------------------------------
-  Field                   Type                    Meaning
-  ----------------------- ----------------------- -----------------------
-  `observation_id`        string                  Stable ID generated for
-                                                  the imported row
+## Water-quality observation
+| Field | Type | Meaning |
+|---|---|---|
+| `observationId` | string | Stable record identifier |
+| `ghatId` | string | Reference to canonical ghat |
+| `observedAt` | ISO date/null | Sampling/observation date |
+| `year` | integer/null | Derived from observation date only if valid |
+| `parameter` | string | Source parameter name |
+| `rawValue` | string/number/null | Original source value/qualifier |
+| `numericValue` | number/null | Parsed numeric value only when valid |
+| `qualifier` | enum/null | `BDL`, `ND`, `missing`, or source-specific qualifier |
+| `unit` | string/null | Original or verified normalised unit |
+| `sourceId` | string | Source report/document identifier |
+| `sourcePage` | string/number/null | Page/table/row reference where available |
+| `validationStatus` | enum | `valid`, `missing`, `qualified`, `invalid`, `needs_review` |
 
-  `site_name_raw`         string                  Original site name
+## Legal status evidence
+| Field | Type | Meaning |
+|---|---|---|
+| `ghatId` | string | Canonical location ID |
+| `status` | enum | `authorised`, `prohibited`, `conditional`, `not_verified` |
+| `sourceTitle` | string/null | Official source title |
+| `sourceUrl` | string/null | Official source URL |
+| `clauseOrOrder` | string/null | Applicable order, clause, or section |
+| `scope` | string/null | Location and activity scope |
+| `effectiveFrom` | ISO date/null | Effective start if specified |
+| `effectiveTo` | ISO date/null | Effective end if specified |
+| `verifiedAt` | ISO date/null | Date the team checked the source |
+| `notes` | string/null | Carefully scoped explanation |
 
-  `ghat_id`               string/null             Normalised location ID
-                                                  only when mapping is
-                                                  supported
+A status other than `not_verified` requires applicable, current official evidence. If evidence is unclear or stale, use `not_verified`.
 
-  `observation_date`      date/null               Sampling date, if
-                                                  available
+## Environmental priority
+Allowed categories:
+- `higher_historical_concern`
+- `moderate_historical_concern`
+- `lower_observed_concern`
+- `insufficient_data`
 
-  `year`                  integer/null            Sampling year
+Priority must be based on a documented deterministic method. Show valid sample counts, coverage, observation period, relevant exceedances, and a plain-language explanation. Do not label a ghat “safe” based only on lower observed concern.
 
-  `phase`                 string/null             Pre/post or festival
-                                                  phase if provided
+## Missing and qualified values
+- **Missing/unsampled:** retain as missing; never coerce to zero or count as passing.
+- **BDL:** preserve “below detection limit” and the source's detection-limit details where available. Do not silently set it to zero.
+- **ND:** preserve “not detected” according to the source's convention. Do not assume ND and BDL mean the same thing unless the source defines them that way.
+- **Invalid value:** preserve raw value, mark invalid/needs review, exclude from numeric calculations until resolved.
+- **Duplicates:** use source IDs/row identity to detect duplicates; do not remove records solely because their values match.
 
-  `parameter`             string                  Parameter measured
+## Benchmark configuration
+CPCB outdoor bathing reference criteria cited for this project are commonly stated as:
+- pH: 6.5–8.5
+- Dissolved oxygen (DO): greater than 5 mg/L
+- Biochemical oxygen demand (BOD): less than 3 mg/L
 
-  `value_raw`             string                  Original source value,
-                                                  preserved verbatim
+Before implementation, verify the exact operators, units, and test conditions in the official source selected by the team. Store these in one versioned configuration object and display the source. These benchmarks are not by themselves a legal decision rule for idol immersion.
 
-  `value_numeric`         number/null             Parsed value when valid
+## Dataset notes
+The current project description refers to 1,524 rows across seven ghats and the years 2023–2025. Verify against the actual committed CSVs. Do not hard-code those counts if the source files differ. Dataset coverage is historical and cannot establish current 2026 conditions.
 
-  `unit`                  string/null             Original/verified unit
+## Source-document record
+Recommended fields: `sourceId`, `title`, `publisher`, `publishedAt`, `sourceUrl`, `retrievedAt`, `pageReferences`, `fileName`, `checksum` (optional), `notes`.
 
-  `result_state`          enum                    `numeric`, `missing`,
-                                                  `BDL`, `ND`, `invalid`
-                                                  or source-specific
-                                                  state
+## Scenario record
+Recommended fields: `scenarioId`, `ghatId`, `scenarioType`, `assumptions`, `changedInputs`, `methodDescription`, `baseline`, `scenarioOutput`, `isHypothetical: true`, `limitations`, `createdAt`.
 
-  `source_document`       string/null             Report/file identifier
-
-  `source_page`           string/integer/null     Page reference
-
-  `mapping_confidence`    enum                    `high`, `medium`,
-                                                  `low`, `unmapped`
-
-  `notes`                 string/null             Parsing or source notes
-  -----------------------------------------------------------------------
-
-## 2. Required handling
-
--   **Missing:** blank/unsampled is missing evidence, not zero or a
-    pass.
--   **BDL:** below detection limit; preserve raw value and detection
-    limit if available. Do not replace with zero by default.
--   **ND:** preserve the source's meaning; do not assume it is identical
-    to BDL unless the source defines it that way.
--   **Invalid:** flag for review; disclose rows excluded from
-    calculations.
--   **Ambiguous site names:** do not merge similar names without
-    evidence. Preserve raw name and mapping confidence.
--   **Unequal sample counts:** show valid counts with rates; avoid
-    ranking on raw counts alone.
--   **Historical vs current:** the supplied observations cover
-    2023--2025 and do not establish current conditions.
-
-## 3. Criteria configuration
-
-Store criteria separately from code.
-
-  Field                           Meaning
-  ------------------------------- ---------------------------------
-  `parameter`                     Parameter name
-  `unit`                          Unit
-  `operator`                      `between`, `>`, `>=`, `<`, `<=`
-  `lower_bound` / `upper_bound`   Optional bounds
-  `threshold_value`               Optional single value
-  `criterion_name`                Standard/category name
-  `source_authority`              Issuing authority
-  `source_url`                    Official source
-  `applicability_note`            Where/when it applies
-  `verified_on`                   Date checked
-
-Initial outdoor-bathing reference values include pH 6.5--8.5, DO \>5
-mg/L and BOD \<3 mg/L. Confirm exact operators and units in the selected
-source before implementation. These values are not a universal legal
-immersion-permission test. Compare other parameters only when
-applicability, units and measurement basis are verified.
-
-## 4. Legal-status records
-
-Suggested fields: `ghat_id`, `status`, `authority`, `document_title`,
-`source_url`, `document_date`, `effective_from`, `effective_to`,
-`applicable_clause`, `scope`, `verified_on`, `verification_notes`.
-
-Use `not_verified` unless an applicable authoritative source establishes
-the status. A monitoring report alone does not prove permission or
-prohibition.
-
-## 5. Google Maps location records
-
-Suggested fields: `ghat_id`, `display_name`, `latitude`, `longitude`,
-`coordinate_source`, `coordinate_status` (`verified`, `approximate`,
-`unverified`), `mapping_confidence`, `notes`.
-
-Do not invent coordinates. If a location is ambiguous, withhold the
-marker or label it approximate and disclose the reason.
-
-## 6. Nearby environmental context
-
-Only include sourced monitoring locations, documented environmental
-points, verified alternative facilities or recorded cleanup locations.
-Store source, verification status and coordinates. Geographic proximity
-alone does not prove pollution, contamination or causation.
+## Data quality checklist
+- Confirm encoding, delimiters, header names, date formats, and units.
+- Keep original raw fields.
+- Validate ghat names against canonical IDs; flag uncertain matches for review.
+- Retain source-page identifiers.
+- Count missingness by parameter and location.
+- Ensure denominators include only valid applicable observations.
+- Test that missing, BDL, ND, and invalid records do not become numeric zero.
