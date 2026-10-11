@@ -80,7 +80,11 @@ async function main() {
       password = await prompt('Admin password (min 8 chars): ');
     }
 
-    displayName = await prompt('Display name (optional): ') || username;
+    // Non-interactive hosts (Docker/Render) have no TTY, so never wait on a prompt there.
+    displayName =
+      process.env.ADMIN_DISPLAY_NAME ||
+      (process.stdin.isTTY ? await prompt('Display name (optional): ') : '') ||
+      username;
   }
 
   if (!username || username.length < 3) {

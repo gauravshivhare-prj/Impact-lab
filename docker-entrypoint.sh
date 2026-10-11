@@ -11,6 +11,15 @@ if [ -z "$CLIENT_ORIGIN" ]; then
   echo "Defaulting CLIENT_ORIGIN to: *"
 fi
 
+# Create the first administrator from env vars. The SQLite file is wiped when the container
+# restarts on free hosting, so this runs on every boot; it is a no-op if an admin already exists.
+if [ -n "$ADMIN_USERNAME" ] && [ -n "$ADMIN_PASSWORD" ]; then
+  echo "Provisioning administrator account '$ADMIN_USERNAME'..."
+  (cd /app/server && node src/db/provision-admin.js < /dev/null) || echo "Warning: admin provisioning failed."
+else
+  echo "ADMIN_USERNAME / ADMIN_PASSWORD not set: no login account will exist."
+fi
+
 # 1. Start Python Risk Engine in the background
 echo "[1/2] Launching internal Python Risk Engine on port 8000..."
 python3 -m uvicorn api:app --app-dir engine --host 127.0.0.1 --port 8000 &
