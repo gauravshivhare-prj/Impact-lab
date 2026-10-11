@@ -6,7 +6,7 @@
 # ------------------------------------------------------------------------------
 # Stage 1: Build the Vite React Frontend
 # ------------------------------------------------------------------------------
-FROM node:20-alpine AS client-builder
+FROM node:22-alpine AS client-builder
 WORKDIR /app/client
 
 COPY client/package*.json ./
@@ -18,7 +18,7 @@ RUN npm run build
 # ------------------------------------------------------------------------------
 # Stage 2: Production Runtime with Node.js and Python 3
 # ------------------------------------------------------------------------------
-FROM node:20-slim AS runner
+FROM node:22-slim AS runner
 
 # Ensure UTF-8 encoding across all tools
 ENV LANG=C.UTF-8 \
@@ -49,6 +49,9 @@ RUN cd server && (npm ci --omit=dev || npm install --omit=dev --no-audit --no-fu
 COPY track-2-visarjan-ghat-watch ./track-2-visarjan-ghat-watch
 COPY server ./server
 COPY engine ./engine
+
+# SQLite database directory (server/data is git-ignored, so it must be created here)
+RUN mkdir -p /app/server/data
 
 # Copy compiled frontend from Stage 1 into server's accessible path
 COPY --from=client-builder /app/client/dist ./client/dist

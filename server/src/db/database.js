@@ -8,6 +8,7 @@
  */
 
 import Database from 'better-sqlite3';
+import { mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
@@ -22,6 +23,7 @@ let db = null;
 
 export function getDatabase() {
   if (!db) {
+    mkdirSync(dirname(DB_PATH), { recursive: true });
     db = new Database(DB_PATH);
     db.pragma('journal_mode = WAL');
     initializeTables();
