@@ -1,12 +1,9 @@
 /**
- * Runtime configuration.
- * The Cerebras API key is deliberately kept out of this object so it can never be
- * logged or serialised by accident; read it with getCerebrasApiKey() at call time.
+ * Runtime configuration, validated at startup.
  */
 
 const DEFAULT_PORT = 5000;
 const DEFAULT_DEV_CLIENT_ORIGIN = 'http://localhost:5173';
-const DEFAULT_CEREBRAS_TIMEOUT_MS = 20000;
 
 function parseInteger(name, value, { min, max, fallback }) {
   if (value === undefined || value === '') return fallback;
@@ -41,15 +38,5 @@ export function loadEnv(source = process.env) {
     port: parseInteger('PORT', source.PORT, { min: 1, max: 65535, fallback: DEFAULT_PORT }),
     clientOrigins: parseOrigins(source.CLIENT_ORIGIN, isProduction),
     trustProxy: parseInteger('TRUST_PROXY', source.TRUST_PROXY, { min: 0, max: 10, fallback: 0 }),
-    cerebrasModel: source.CEREBRAS_MODEL?.trim() || null,
-    cerebrasTimeoutMs: parseInteger('CEREBRAS_TIMEOUT_MS', source.CEREBRAS_TIMEOUT_MS, {
-      min: 1000,
-      max: 60000,
-      fallback: DEFAULT_CEREBRAS_TIMEOUT_MS,
-    }),
   });
-}
-
-export function getCerebrasApiKey(source = process.env) {
-  return source.CEREBRAS_API_KEY?.trim() || null;
 }

@@ -1,7 +1,6 @@
 /**
  * Deterministic English/Hindi brief built only from backend facts.
- * Used when Cerebras is not configured, or when an AI draft fails the fact check,
- * so the core workflow still works without AI.
+ * This is the only brief generator: every number in it comes from the facts payload.
  */
 
 import { getBenchmark } from '../../config/benchmarks.js';

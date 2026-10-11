@@ -1,19 +1,13 @@
 import 'dotenv/config';
 import { createApp } from './app.js';
-import { getCerebrasApiKey, loadEnv } from './config/env.js';
+import { loadEnv } from './config/env.js';
 import { loadDataContext } from './services/dataContext.service.js';
-import { createCerebrasClient } from './services/reports/cerebras.service.js';
 
 async function start() {
   const config = loadEnv();
   const dataContext = await loadDataContext();
-  const aiClient = createCerebrasClient({
-    apiKey: getCerebrasApiKey(),
-    model: config.cerebrasModel,
-    timeoutMs: config.cerebrasTimeoutMs,
-  });
 
-  const app = createApp({ config, dataContext, aiClient });
+  const app = createApp({ config, dataContext });
   const server = app.listen(config.port, (err) => {
     if (err) {
       console.error(`Failed to listen on port ${config.port}: ${err.message}`);
@@ -21,7 +15,7 @@ async function start() {
     }
     console.log(
       `GhatWatch API listening on port ${config.port} (${config.nodeEnv}); ` +
-        `${dataContext.importSummary.totalRecords} records loaded; AI briefs ${aiClient.enabled ? 'enabled' : 'disabled (template briefs)'}.`,
+        `${dataContext.importSummary.totalRecords} records loaded.`,
     );
   });
 
