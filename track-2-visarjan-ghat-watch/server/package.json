@@ -1,0 +1,21 @@
+{
+  "name": "ghatwatch-server",
+  "version": "1.0.0",
+  "description": "GhatWatch AI - Water quality analytics server",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test src/**/*.test.js",
+    "test:data": "node --test src/services/data/*.test.js",
+    "test:analytics": "node --test src/services/analytics/*.test.js"
+  },
+  "dependencies": {
+    "csv-parse": "^5.5.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
