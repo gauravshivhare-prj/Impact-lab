@@ -1,7 +1,7 @@
 /**
  * Builds the facts-only payload for a ghat brief from the cached analytics.
  * Every value here comes from services/data, services/analytics or config — never from
- * the request. This payload is the only input the AI model receives.
+ * the request.
  */
 
 import { CPCB_CLASS_B, getAllBenchmarkedParameters } from '../../config/benchmarks.js';

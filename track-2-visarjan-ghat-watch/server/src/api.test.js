@@ -1,6 +1,6 @@
 /**
  * Express API integration tests (Supertest) against the real committed dataset.
- * Cerebras is always mocked — no live key or network access is required.
+ * No API keys or network access are required.
  */
 
 import { before, describe, it } from 'node:test';
@@ -9,27 +9,27 @@ import request from 'supertest';
 import { createApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { loadDataContext } from './services/dataContext.service.js';
-import { AiProviderError, createCerebrasClient } from './services/reports/cerebras.service.js';
-import { checkDraft, findUnverifiedNumbers } from './services/reports/brief.service.js';
 import { buildBriefFacts } from './services/reports/briefFacts.service.js';
 import { renderTemplateBrief } from './services/reports/briefTemplate.service.js';
 
 process.env.NODE_ENV = 'test';
 
 const config = loadEnv({ NODE_ENV: 'test', CLIENT_ORIGIN: 'http://localhost:5173' });
-const DISABLED_AI = Object.freeze({ enabled: false, generate: async () => assert.fail('AI must not be called') });
 
 let dataContext;
 before(async () => {
   dataContext = await loadDataContext();
 });
 
-function appWith(aiClient = DISABLED_AI) {
-  return createApp({ config, dataContext, aiClient });
+function appWith() {
+  return createApp({ config, dataContext });
 }
 
-function fakeAi(generate) {
-  return { enabled: true, generate };
+// Every number in a brief must be traceable to the facts payload.
+function numbersNotInFacts(text, facts) {
+  const numbers = (value) => (value.match(/\d+(?:\.\d+)?/g) ?? []).map(Number);
+  const allowed = new Set(numbers(JSON.stringify(facts)));
+  return numbers(text).filter((n) => !allowed.has(n));
 }
 
 describe('GET /api/v1/ghats', () => {
@@ -165,11 +165,10 @@ describe('GET /api/v1/analytics', () => {
 describe('POST /api/v1/reports/brief', () => {
   const body = { ghatId: 'bairagarh-sant-hirdaram-kund', language: 'en' };
 
-  it('returns a template brief when Cerebras is not configured', async () => {
+  it('returns an English brief with facts, sources and limitations', async () => {
     const res = await request(appWith()).post('/api/v1/reports/brief').send(body);
     assert.equal(res.status, 200);
-    assert.equal(res.body.data.generator, 'template');
-    assert.equal(res.body.meta.aiStatus, 'not_configured');
+    assert.equal(res.body.data.language, 'en');
     assert.match(res.body.data.brief, /not verified/i);
     assert.match(res.body.data.brief, /2025 Durga/);
     assert.ok(res.body.data.factsUsed.length > 0);
@@ -184,60 +183,21 @@ describe('POST /api/v1/reports/brief', () => {
     assert.match(res.body.data.brief, /[ऀ-ॿ]/);
   });
 
-  it('sends only backend facts to the model and returns its text when it passes the fact check', async () => {
-    let prompt;
-    const ai = fakeAi(async (p) => {
-      prompt = p;
-      return 'Bairagarh (Sant Hirdaram) kund: 11 of 13 valid dissolved oxygen readings were below 5 mg/l between 2023 and 2025. Legal status is not verified.';
-    });
-    const res = await request(appWith(ai)).post('/api/v1/reports/brief').send(body);
-    assert.equal(res.status, 200);
-    assert.equal(res.body.data.generator, 'cerebras');
-    assert.equal(res.body.meta.aiStatus, 'ok');
-    assert.match(prompt.user, /^FACTS \(JSON\):/);
-    assert.match(prompt.system, /Do not add, change, round or calculate any number/);
+  it('only uses numbers that come from backend facts, for every ghat and language', () => {
+    for (const ghatId of dataContext.ghats.keys()) {
+      const facts = buildBriefFacts(dataContext, ghatId);
+      for (const language of ['en', 'hi']) {
+        assert.deepEqual(numbersNotInFacts(renderTemplateBrief(facts, language), facts), [], `${ghatId} ${language}`);
+      }
+    }
   });
 
-  it('discards an AI draft that invents numbers', async () => {
-    const ai = fakeAi(async () => 'BOD rose by 87.5% to 4321 mg/l.');
-    const res = await request(appWith(ai)).post('/api/v1/reports/brief').send(body);
-    assert.equal(res.status, 200);
-    assert.equal(res.body.data.generator, 'template');
-    assert.equal(res.body.meta.aiStatus, 'rejected_unverified_numbers');
-  });
-
-  it('discards a Hindi request answered in English', async () => {
-    const ai = fakeAi(async () => 'Legal status is not verified.');
-    const res = await request(appWith(ai)).post('/api/v1/reports/brief').send({ ...body, language: 'hi' });
-    assert.equal(res.body.meta.aiStatus, 'rejected_wrong_language');
-    assert.equal(res.body.data.generator, 'template');
-  });
-
-  it('maps an AI timeout to 502 AI_PROVIDER_ERROR', async () => {
-    const ai = fakeAi(async () => {
-      throw new AiProviderError('timeout');
-    });
-    const res = await request(appWith(ai)).post('/api/v1/reports/brief').send(body);
-    assert.equal(res.status, 502);
-    assert.equal(res.body.error.code, 'AI_PROVIDER_ERROR');
-  });
-
-  it('maps provider rate limiting to 429 RATE_LIMITED', async () => {
-    const ai = fakeAi(async () => {
-      throw new AiProviderError('rate_limited');
-    });
-    const res = await request(appWith(ai)).post('/api/v1/reports/brief').send(body);
-    assert.equal(res.status, 429);
-    assert.equal(res.body.error.code, 'RATE_LIMITED');
-  });
-
-  it('returns 500 without leaking internals on unexpected errors', async () => {
-    const ai = fakeAi(async () => {
-      throw new Error('secret-internal-detail at /srv/app.js:1');
-    });
-    const res = await request(appWith(ai)).post('/api/v1/reports/brief').send(body);
-    assert.equal(res.status, 500);
-    assert.deepEqual(res.body, { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
+  it('never calls a ghat safe or decides legal status', () => {
+    for (const ghatId of dataContext.ghats.keys()) {
+      const facts = buildBriefFacts(dataContext, ghatId);
+      assert.doesNotMatch(renderTemplateBrief(facts, 'en'), /\b(is|are)\s+(safe|permitted|prohibited)\b/i);
+      assert.doesNotMatch(renderTemplateBrief(facts, 'hi'), /सुरक्षित\s+(है|हैं)/);
+    }
   });
 
   it('rejects user-supplied facts and invalid options', async () => {
@@ -264,7 +224,7 @@ describe('POST /api/v1/reports/brief', () => {
   it('rate limits brief generation', async () => {
     const app = appWith();
     let last;
-    for (let i = 0; i < 11; i += 1) {
+    for (let i = 0; i < 31; i += 1) {
       last = await request(app).post('/api/v1/reports/brief').send(body);
     }
     assert.equal(last.status, 429);
@@ -321,42 +281,6 @@ describe('app hardening', () => {
   });
 });
 
-describe('cerebras client', () => {
-  it('is disabled without both a key and a model', () => {
-    assert.equal(createCerebrasClient({ apiKey: 'k', model: null, timeoutMs: 1000 }).enabled, false);
-    assert.equal(createCerebrasClient({ apiKey: null, model: 'm', timeoutMs: 1000 }).enabled, false);
-  });
-
-  it('sends the key only in the Authorization header and reads choices[0].message.content', async () => {
-    let captured;
-    const client = createCerebrasClient({
-      apiKey: 'test-key',
-      model: 'test-model',
-      timeoutMs: 1000,
-      fetchImpl: async (url, init) => {
-        captured = { url, init };
-        return new Response(JSON.stringify({ choices: [{ message: { content: 'hello' } }] }), { status: 200 });
-      },
-    });
-    assert.equal(await client.generate({ system: 's', user: 'u' }), 'hello');
-    assert.equal(captured.url, 'https://api.cerebras.ai/v1/chat/completions');
-    assert.equal(captured.init.headers.Authorization, 'Bearer test-key');
-    assert.ok(!captured.init.body.includes('test-key'));
-  });
-
-  it('maps upstream 429 and 5xx responses to provider errors', async () => {
-    for (const [status, reason] of [[429, 'rate_limited'], [503, 'provider_error']]) {
-      const client = createCerebrasClient({
-        apiKey: 'k',
-        model: 'm',
-        timeoutMs: 1000,
-        fetchImpl: async () => new Response('{}', { status }),
-      });
-      await assert.rejects(client.generate({ system: 's', user: 'u' }), (err) => err.reason === reason);
-    }
-  });
-});
-
 describe('observation paging', () => {
   it('returns all observations by default and pages with limit/offset', async () => {
     const app = appWith();
@@ -383,53 +307,8 @@ describe('observation paging', () => {
   });
 });
 
-describe('draft checks', () => {
-  it('template briefs for every ghat pass the same checks applied to AI drafts', () => {
-    for (const ghatId of dataContext.ghats.keys()) {
-      const facts = buildBriefFacts(dataContext, ghatId);
-      for (const language of ['en', 'hi']) {
-        assert.equal(checkDraft(renderTemplateBrief(facts, language), facts, language), null, `${ghatId} ${language}`);
-      }
-    }
-  });
-
-  it('rejects number words, negative numbers, safety/legal/health claims and mostly-English Hindi', () => {
-    const facts = buildBriefFacts(dataContext, 'bairagarh-sant-hirdaram-kund');
-    assert.equal(checkDraft('DO fell to zero in four readings.', facts, 'en'), 'rejected_unverified_numbers');
-    assert.equal(checkDraft('DO dropped to -5 mg/l.', facts, 'en'), 'rejected_unverified_numbers');
-    assert.equal(checkDraft('चार रीडिंग में DO कम था।', facts, 'hi'), 'rejected_unverified_numbers');
-    assert.equal(checkDraft('The ghat is safe for immersion.', facts, 'en'), 'rejected_prohibited_claim');
-    assert.equal(checkDraft('Immersion is prohibited here.', facts, 'en'), 'rejected_prohibited_claim');
-    assert.equal(checkDraft('Low DO caused fish deaths.', facts, 'en'), 'rejected_prohibited_claim');
-    assert.equal(checkDraft('यह घाट सुरक्षित है।', facts, 'hi'), 'rejected_prohibited_claim');
-    assert.equal(checkDraft('Legal status is not verified. स्थिति', facts, 'hi'), 'rejected_wrong_language');
-  });
-
-  it('does not flag ordinary words that contain number-like substrings', () => {
-    const facts = buildBriefFacts(dataContext, 'khatlapura-ghat');
-    assert.equal(checkDraft('बरसात से पहले और दोनों पर्वों के दौरान जल-परीक्षण की आवश्यकता है।', facts, 'hi'), null);
-    assert.equal(checkDraft('No one should treat missing readings as clean.', facts, 'en'), null);
-  });
-});
-
-describe('fact check', () => {
-  it('accepts numbers from the facts, including Devanagari digits', () => {
-    const facts = { count: 42, limit: 5, years: '2023-2025' };
-    assert.deepEqual(findUnverifiedNumbers('४२ readings, limit 5, 2023 to 2025', facts), []);
-  });
-
-  it('reports numbers that are not in the facts', () => {
-    assert.deepEqual(findUnverifiedNumbers('About 60% of readings', { count: 42 }), [60]);
-  });
-});
-
 describe('loadEnv', () => {
   it('requires CLIENT_ORIGIN in production', () => {
     assert.throws(() => loadEnv({ NODE_ENV: 'production' }), /CLIENT_ORIGIN/);
-  });
-
-  it('never exposes the Cerebras key on the config object', () => {
-    const loaded = loadEnv({ CEREBRAS_API_KEY: 'secret-value', CEREBRAS_MODEL: 'm' });
-    assert.ok(!JSON.stringify(loaded).includes('secret-value'));
   });
 });

@@ -7,22 +7,31 @@ Node.js + Express REST API for GhatWatch AI. Contract: [`docs/API_CONTRACT.md`](
 ```bash
 cd track-2-visarjan-ghat-watch/server
 npm install
-cp .env.example .env      # optional: add CEREBRAS_API_KEY and CEREBRAS_MODEL for AI briefs
+cp .env.example .env
 npm run dev               # http://localhost:5000/api/v1
-npm test                  # no Cerebras key or network needed
+npm test                  # no API keys or network needed
 ```
 
 Requires Node.js 18 or later.
 
+## Environment variables
+
+| Variable | Local | Production |
+|---|---|---|
+| `NODE_ENV` | `development` | `production` |
+| `PORT` | `5000` | Usually set by the host |
+| `CLIENT_ORIGIN` | `http://localhost:5173` | Deployed frontend URL (required; comma-separate several) |
+| `TRUST_PROXY` | empty | `1` when behind a reverse proxy (Render, Railway, etc.) |
+
 ## Persistence mode
 
-The API uses a **validated in-memory dataset**. At startup it imports `../data/bhopal_ghats_2023_2025.csv` once using the data and analytics services, then serves cached results. It does not use MongoDB yet. If the import fails, the server does not start.
+The API uses a **validated in-memory dataset**. At startup it imports `../data/bhopal_ghats_2023_2025.csv` once using the data and analytics services, then serves cached results. It does not use MongoDB. If the import fails, the server does not start.
 
 ## Endpoints (`/api/v1`)
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/health` | Liveness check; also reports whether AI briefs are configured |
+| GET | `/health` | Liveness check |
 | GET | `/ghats` | Canonical ghat list with legal status and environmental priority as separate fields |
 | GET | `/ghats/:ghatId` | Evidence, observations, per-parameter summaries, sources and limitations. Optional `?limit=1-500&offset=` pages the observations (all by default) |
 | GET | `/ghats/:ghatId/sources` | Source reports with page references, plus the CPCB criteria source |
@@ -40,7 +49,7 @@ curl -X POST http://localhost:5000/api/v1/reports/brief \
   -d '{"ghatId":"khatlapura-ghat","language":"hi"}'
 ```
 
-Errors always use `{ "error": { "code", "message" } }`: `VALIDATION_ERROR` (400/413), `GHAT_NOT_FOUND` (404), `NOT_FOUND` (404), `RATE_LIMITED` (429), `NOT_IMPLEMENTED` (501), `AI_PROVIDER_ERROR` (502), `INTERNAL_ERROR` (500). Stack traces and secrets are never returned.
+Errors always use `{ "error": { "code", "message" } }`: `VALIDATION_ERROR` (400/413), `GHAT_NOT_FOUND` (404), `NOT_FOUND` (404), `RATE_LIMITED` (429), `NOT_IMPLEMENTED` (501), `INTERNAL_ERROR` (500). Stack traces are never returned.
 
 ## Data rules the API enforces
 
@@ -51,21 +60,18 @@ Errors always use `{ "error": { "code", "message" } }`: `VALIDATION_ERROR` (400/
 
 ## How briefs are generated
 
-1. The server builds a facts-only payload from cached analytics. The request may contain only `ghatId`, `language` and `includeScenario`; any other field is rejected.
-2. **If `CEREBRAS_API_KEY` and `CEREBRAS_MODEL` are set**, the facts go to Cerebras server-side. The key is never sent to the browser.
-3. **The AI draft is discarded** and the deterministic template brief is returned when any of these is true:
-   - the draft contains a number that is not in the facts, a number written as a word, or a negative number;
-   - it makes a safety, legal or health claim (e.g. "is safe", "is prohibited", "fish deaths", "सुरक्षित है");
-   - a Hindi request comes back mostly in Latin script.
+Briefs are generated without any AI model. No external API is called and no API key is needed.
 
-   The number check confirms each number exists somewhere in the facts. It cannot tell if a real number is attached to the wrong parameter, so the prompt rules still matter.
-4. **AI failures:** a timeout or provider error returns `502 AI_PROVIDER_ERROR`; provider rate limiting returns `429 RATE_LIMITED`. The rest of the API keeps working.
-5. **Without AI configured**, the endpoint returns the template brief. `data.generator` is `"template"` or `"cerebras"`, and `meta.aiStatus` explains which one was used.
+1. The request may contain only `ghatId`, `language` (`en` or `hi`) and `includeScenario`. Any other field is rejected.
+2. The server builds a facts-only payload from the cached analytics.
+3. A fixed English or Hindi template turns those facts into the brief. Every number in it comes from the facts; a test checks this for every ghat in both languages.
+4. The brief never calls a ghat safe and never decides legal status. It always states the data years, missing data, source pages and limitations.
 
-Brief generation is limited to 10 requests per minute per client IP; all other endpoints share a limit of 300 per minute.
+Brief generation is limited to 30 requests per minute per client IP; all other endpoints share a limit of 300 per minute.
 
 ## Deployment checklist
 
-- Set `NODE_ENV=production` and `CLIENT_ORIGIN` to the deployed frontend origin. The server refuses to start without `CLIENT_ORIGIN`.
-- Set `TRUST_PROXY` to the number of proxy hops when the server runs behind a reverse proxy, so rate limiting sees real client IPs.
-- Provide `CEREBRAS_API_KEY` through the host's secret store. Never commit it.
+- **Host settings:** root directory `track-2-visarjan-ghat-watch/server`, build command `npm install`, start command `npm start`.
+- **`CLIENT_ORIGIN`:** set `NODE_ENV=production` and set `CLIENT_ORIGIN` to the deployed frontend origin. The server refuses to start without `CLIENT_ORIGIN`.
+- **`TRUST_PROXY`:** set it to the number of proxy hops when the server runs behind a reverse proxy, so rate limiting sees real client IPs.
+- **Secrets:** set environment variables in the host's dashboard. Never commit a `.env` file.

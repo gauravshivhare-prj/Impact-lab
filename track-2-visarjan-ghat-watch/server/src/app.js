@@ -11,15 +11,14 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 export const API_PREFIX = '/api/v1';
 
 /**
- * @param {{ config: object, dataContext: object, aiClient: { enabled: boolean, generate: Function } }} deps
+ * @param {{ config: object, dataContext: object }} deps
  */
-export function createApp({ config, dataContext, aiClient }) {
+export function createApp({ config, dataContext }) {
   const app = express();
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
   app.locals.dataContext = dataContext;
-  app.locals.aiClient = aiClient;
 
   app.use(helmet());
   app.use(
@@ -33,7 +32,7 @@ export function createApp({ config, dataContext, aiClient }) {
   app.use(API_PREFIX, createApiRateLimiter());
 
   app.get(`${API_PREFIX}/health`, (req, res) => {
-    res.json({ data: { status: 'ok', aiConfigured: Boolean(aiClient?.enabled) }, meta: {} });
+    res.json({ data: { status: 'ok' }, meta: {} });
   });
   app.use(`${API_PREFIX}/ghats`, ghatRoutes);
   app.use(`${API_PREFIX}/analytics`, analyticsRoutes);

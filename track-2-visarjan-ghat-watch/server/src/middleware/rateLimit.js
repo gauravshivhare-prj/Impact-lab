@@ -16,11 +16,11 @@ export function createApiRateLimiter() {
   });
 }
 
-/** Stricter limit for AI brief generation, which spends Cerebras quota. */
+/** Stricter limit for brief generation. */
 export function createBriefRateLimiter() {
   return rateLimit({
     windowMs: 60 * 1000,
-    limit: 10,
+    limit: 30,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     handler: limitHandler,
