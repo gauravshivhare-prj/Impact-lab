@@ -23,7 +23,9 @@ export type NavItemKey =
   | 'evidence'
   | 'data-quality'
   | 'briefings'
-  | 'methodology';
+  | 'methodology'
+  | 'assistant'
+  | 'simulator';
 
 interface SidebarProps {
   currentTab: NavItemKey;

@@ -6,7 +6,7 @@
 
 import { assertGhatId, assertOnlyKeys, isPlainObject, validationError } from './common.validator.js';
 
-export const SCENARIO_TYPES = Object.freeze(['hypothetical_monitoring_or_waste_management']);
+export const SCENARIO_TYPES = Object.freeze(['hypothetical_monitoring_or_waste_management', 'water_quality_comparison']);
 
 const MAX_DESCRIPTION_LENGTH = 500;
 const MAX_CHANGED_INPUTS = 20;

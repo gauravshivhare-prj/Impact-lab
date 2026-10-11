@@ -13,6 +13,8 @@ import { DataQualityPage } from './pages/DataQualityPage';
 import { RiskScreeningPage } from './pages/RiskScreeningPage';
 import { BriefingPage } from './pages/BriefingPage';
 import { MethodologyPage } from './pages/MethodologyPage';
+import { AssistantPage } from './pages/AssistantPage';
+import { SimulatorPage } from './pages/SimulatorPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -217,6 +219,14 @@ function AppContent() {
 
             {currentTab === 'methodology' && (
               <MethodologyPage language={language} />
+            )}
+
+            {currentTab === 'assistant' && (
+              <AssistantPage language={language} />
+            )}
+
+            {currentTab === 'simulator' && (
+              <SimulatorPage language={language} />
             )}
           </main>
         )}

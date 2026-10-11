@@ -15,6 +15,8 @@ import {
   Check,
   ChevronDown,
   LogOut,
+  Bot,
+  FlaskConical,
 } from 'lucide-react';
 import type { NavItemKey } from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -132,6 +134,18 @@ const TOP_NAV_ITEMS: NavItemDef[] = [
     labelEn: 'Methodology',
     labelHi: 'कार्यप्रणाली',
     icon: BookOpen,
+  },
+  {
+    key: 'assistant',
+    labelEn: 'AI Assistant',
+    labelHi: 'AI सहायक',
+    icon: Bot,
+  },
+  {
+    key: 'simulator',
+    labelEn: 'What-If',
+    labelHi: 'क्या-अगर',
+    icon: FlaskConical,
   },
 ];
 
