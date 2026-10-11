@@ -1,36 +1,73 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
-import { dataService } from '../services/dataService';
-import type { GhatPriority } from '../types';
+import { Bot, Send, Loader2, AlertCircle, ExternalLink, Trash2, Sparkles, Info } from 'lucide-react';
 
 interface AssistantPageProps {
   language: 'en' | 'hi';
+}
+
+interface ChatSource {
+  type: string;
+  ghat?: string;
+  priority?: string;
+  score?: number;
+  period?: string;
+  parameter?: string;
+  value?: string;
 }
 
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  sources?: { ghat: string; parameter: string; year: number; value: string }[];
+  sources?: ChatSource[];
+  isLLMGenerated?: boolean;
+  notice?: string;
   timestamp: Date;
 }
 
 const SUGGESTED_QUESTIONS = {
   en: [
-    'Which ghat has the worst BOD levels?',
-    'Show me dissolved oxygen trends at Khatlapura Ghat',
-    'What is the pH range at Prempura Ghat?',
-    'Compare water quality across all ghats in 2024',
-    'Which parameters exceed CPCB limits most often?',
+    'Which ghat has the highest priority in the available dataset?',
+    'Explain the latest observations for Khatlapura Ghat',
+    'What does dissolved oxygen tell us about water quality?',
+    'Which parameters exceed their configured benchmarks?',
+    'What are the limitations of the historical dataset?',
   ],
   hi: [
-    'किस घाट पर BOD का स्तर सबसे खराब है?',
-    'खटलापुरा घाट पर घुलित ऑक्सीजन की प्रवृत्ति दिखाएं',
-    'प्रेमपुरा घाट पर pH की रेंज क्या है?',
-    '2024 में सभी घाटों की जल गुणवत्ता की तुलना करें',
-    'कौन से पैरामीटर CPCB सीमा से सबसे अधिक बार अधिक हैं?',
+    'उपलब्ध डेटासेट में किस घाट की सबसे अधिक प्राथमिकता है?',
+    'खटलापुरा घाट के नवीनतम अवलोकन समझाएं',
+    'घुलित ऑक्सीजन जल गुणवत्ता के बारे में क्या बताता है?',
+    'कौन से पैरामीटर अपने कॉन्फ़िगर किए गए बेंचमार्क से अधिक हैं?',
+    'ऐतिहासिक डेटासेट की सीमाएं क्या हैं?',
   ],
 };
+
+async function sendChatMessage(message: string, language: string): Promise<{
+  response: string;
+  sources: ChatSource[];
+  isLLMGenerated: boolean;
+  notice?: string;
+}> {
+  const res = await fetch('/api/v1/assistant/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ query: message, language }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ error: { message: 'Request failed' } }));
+    throw new Error(error.error?.message || 'Failed to get response');
+  }
+
+  const data = await res.json();
+  return {
+    response: data.data.response,
+    sources: data.data.sources || [],
+    isLLMGenerated: data.data.isLLMGenerated,
+    notice: data.meta?.notice,
+  };
+}
 
 export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -47,207 +84,6 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const generateResponse = async (query: string): Promise<{ content: string; sources: ChatMessage['sources'] }> => {
-    const queryLower = query.toLowerCase();
-    const allMeasurements = dataService.getAllMeasurements();
-    const rankings = dataService.getSiteRankings();
-
-    const sources: ChatMessage['sources'] = [];
-
-    if (queryLower.includes('worst') && queryLower.includes('bod')) {
-      const bodMeasurements = allMeasurements.filter(
-        (m) => m.parameter.toLowerCase() === 'bod' && m.numericValue !== null
-      );
-      const byGhat = new Map<string, number[]>();
-      bodMeasurements.forEach((m) => {
-        if (!byGhat.has(m.site)) byGhat.set(m.site, []);
-        byGhat.get(m.site)!.push(m.numericValue!);
-      });
-
-      let worstGhat = '';
-      let worstAvg = 0;
-      byGhat.forEach((values, ghat) => {
-        const avg = values.reduce((a, b) => a + b, 0) / values.length;
-        if (avg > worstAvg) {
-          worstAvg = avg;
-          worstGhat = ghat;
-        }
-      });
-
-      if (worstGhat) {
-        const readings = byGhat.get(worstGhat)!;
-        readings.slice(0, 3).forEach((val, i) => {
-          sources.push({ ghat: worstGhat, parameter: 'BOD', year: 2023 + i, value: `${val.toFixed(2)} mg/l` });
-        });
-
-        return {
-          content: language === 'hi'
-            ? `${worstGhat} में सबसे खराब BOD स्तर है, औसत ${worstAvg.toFixed(2)} mg/l। CPCB Class B मानक अधिकतम 3.0 mg/l की अनुमति देता है। इस घाट पर ${readings.length} रीडिंग दर्ज की गई हैं।`
-            : `${worstGhat} has the worst BOD levels with an average of ${worstAvg.toFixed(2)} mg/l. The CPCB Class B standard allows a maximum of 3.0 mg/l. This ghat has ${readings.length} recorded readings.`,
-          sources,
-        };
-      }
-    }
-
-    if (queryLower.includes('dissolved oxygen') || queryLower.includes('do ') || queryLower.includes('घुलित ऑक्सीजन')) {
-      const ghatMatch = allMeasurements.find((m) =>
-        queryLower.includes(m.site.toLowerCase().split(' ')[0])
-      );
-      const targetGhat = ghatMatch?.site || 'Khatlapura Ghat';
-
-      const doMeasurements = allMeasurements.filter(
-        (m) => m.parameter.toLowerCase() === 'dissolved oxygen' &&
-               m.site === targetGhat &&
-               m.numericValue !== null
-      );
-
-      if (doMeasurements.length > 0) {
-        const values = doMeasurements.map((m) => m.numericValue!);
-        const avg = values.reduce((a, b) => a + b, 0) / values.length;
-        const min = Math.min(...values);
-        const max = Math.max(...values);
-        const belowThreshold = values.filter((v) => v < 5.0).length;
-
-        doMeasurements.slice(0, 4).forEach((m) => {
-          sources.push({
-            ghat: m.site,
-            parameter: 'Dissolved Oxygen',
-            year: m.year || 2024,
-            value: `${m.numericValue!.toFixed(2)} mg/l`
-          });
-        });
-
-        return {
-          content: language === 'hi'
-            ? `${targetGhat} पर घुलित ऑक्सीजन का विश्लेषण:\n\n- औसत: ${avg.toFixed(2)} mg/l\n- न्यूनतम: ${min.toFixed(2)} mg/l\n- अधिकतम: ${max.toFixed(2)} mg/l\n- 5.0 mg/l से नीचे रीडिंग: ${belowThreshold}/${values.length}\n\nCPCB Class B मानक के अनुसार DO न्यूनतम 5.0 mg/l होना चाहिए।`
-            : `Dissolved Oxygen analysis at ${targetGhat}:\n\n- Average: ${avg.toFixed(2)} mg/l\n- Minimum: ${min.toFixed(2)} mg/l\n- Maximum: ${max.toFixed(2)} mg/l\n- Readings below 5.0 mg/l: ${belowThreshold}/${values.length}\n\nCPCB Class B standard requires DO to be at least 5.0 mg/l.`,
-          sources,
-        };
-      }
-    }
-
-    if (queryLower.includes('ph') && (queryLower.includes('range') || queryLower.includes('रेंज'))) {
-      const ghatMatch = allMeasurements.find((m) =>
-        queryLower.includes(m.site.toLowerCase().split(' ')[0])
-      );
-      const targetGhat = ghatMatch?.site || 'Prempura Ghat';
-
-      const phMeasurements = allMeasurements.filter(
-        (m) => m.parameter.toLowerCase() === 'ph' &&
-               m.site === targetGhat &&
-               m.numericValue !== null
-      );
-
-      if (phMeasurements.length > 0) {
-        const values = phMeasurements.map((m) => m.numericValue!);
-        const min = Math.min(...values);
-        const max = Math.max(...values);
-        const outOfRange = values.filter((v) => v < 6.5 || v > 8.5).length;
-
-        phMeasurements.slice(0, 3).forEach((m) => {
-          sources.push({
-            ghat: m.site,
-            parameter: 'pH',
-            year: m.year || 2024,
-            value: m.numericValue!.toFixed(2)
-          });
-        });
-
-        return {
-          content: language === 'hi'
-            ? `${targetGhat} पर pH रेंज:\n\n- न्यूनतम: ${min.toFixed(2)}\n- अधिकतम: ${max.toFixed(2)}\n- सीमा से बाहर रीडिंग: ${outOfRange}/${values.length}\n\nCPCB Class B मानक के अनुसार pH 6.5-8.5 के बीच होना चाहिए।`
-            : `pH range at ${targetGhat}:\n\n- Minimum: ${min.toFixed(2)}\n- Maximum: ${max.toFixed(2)}\n- Out of range readings: ${outOfRange}/${values.length}\n\nCPCB Class B standard requires pH between 6.5 and 8.5.`,
-          sources,
-        };
-      }
-    }
-
-    if (queryLower.includes('compare') || queryLower.includes('तुलना')) {
-      const yearMatch = queryLower.match(/20\d{2}/);
-      const targetYear = yearMatch ? parseInt(yearMatch[0]) : 2024;
-
-      if (rankings.length > 0) {
-        const comparison = rankings.slice(0, 5).map((r: GhatPriority) => ({
-          name: r.site,
-          priority: r.priority,
-          score: r.scoringBreakdown.totalScore,
-        }));
-
-        comparison.forEach((c) => {
-          sources.push({
-            ghat: c.name,
-            parameter: 'Priority Score',
-            year: targetYear,
-            value: `${c.score.toFixed(1)} (${c.priority})`
-          });
-        });
-
-        const summaryEn = comparison.map((c, i) => `${i + 1}. ${c.name}: ${c.priority} priority (score: ${c.score.toFixed(1)})`).join('\n');
-        const summaryHi = comparison.map((c, i) => `${i + 1}. ${c.name}: ${c.priority} प्राथमिकता (स्कोर: ${c.score.toFixed(1)})`).join('\n');
-
-        return {
-          content: language === 'hi'
-            ? `${targetYear} में घाटों की जल गुणवत्ता तुलना (प्राथमिकता रैंकिंग):\n\n${summaryHi}\n\nये रैंकिंग BOD, DO, और pH के CPCB Class B मानकों से विचलन पर आधारित है।`
-            : `Water quality comparison across ghats in ${targetYear} (priority ranking):\n\n${summaryEn}\n\nThese rankings are based on deviation from CPCB Class B standards for BOD, DO, and pH.`,
-          sources,
-        };
-      }
-    }
-
-    if (queryLower.includes('exceed') || queryLower.includes('limit') || queryLower.includes('cpcb') || queryLower.includes('सीमा')) {
-      const benchmarkedParams = ['Dissolved oxygen', 'BOD', 'pH'];
-      const exceedances: { param: string; count: number; total: number }[] = [];
-
-      benchmarkedParams.forEach((param) => {
-        const paramMeasurements = allMeasurements.filter(
-          (m) => m.parameter.toLowerCase() === param.toLowerCase() && m.numericValue !== null
-        );
-
-        let exceedCount = 0;
-        paramMeasurements.forEach((m) => {
-          const val = m.numericValue!;
-          if (param.toLowerCase() === 'dissolved oxygen' && val < 5.0) exceedCount++;
-          if (param.toLowerCase() === 'bod' && val > 3.0) exceedCount++;
-          if (param.toLowerCase() === 'ph' && (val < 6.5 || val > 8.5)) exceedCount++;
-        });
-
-        exceedances.push({ param, count: exceedCount, total: paramMeasurements.length });
-        sources.push({
-          ghat: 'All Ghats',
-          parameter: param,
-          year: 2024,
-          value: `${exceedCount}/${paramMeasurements.length} exceedances`
-        });
-      });
-
-      exceedances.sort((a, b) => (b.count / b.total) - (a.count / a.total));
-
-      const summaryEn = exceedances.map((e) =>
-        `- ${e.param}: ${e.count}/${e.total} readings (${((e.count / e.total) * 100).toFixed(1)}% exceedance rate)`
-      ).join('\n');
-      const summaryHi = exceedances.map((e) =>
-        `- ${e.param}: ${e.count}/${e.total} रीडिंग (${((e.count / e.total) * 100).toFixed(1)}% उल्लंघन दर)`
-      ).join('\n');
-
-      return {
-        content: language === 'hi'
-          ? `CPCB Class B सीमा उल्लंघन विश्लेषण:\n\n${summaryHi}\n\nमानक:\n- DO: न्यूनतम 5.0 mg/l\n- BOD: अधिकतम 3.0 mg/l\n- pH: 6.5-8.5 रेंज`
-          : `CPCB Class B limit exceedance analysis:\n\n${summaryEn}\n\nStandards:\n- DO: minimum 5.0 mg/l\n- BOD: maximum 3.0 mg/l\n- pH: 6.5-8.5 range`,
-        sources,
-      };
-    }
-
-    const totalReadings = allMeasurements.length;
-    const ghatCount = new Set(allMeasurements.map((m) => m.site)).size;
-
-    return {
-      content: language === 'hi'
-        ? `मुझे आपके प्रश्न का सटीक उत्तर नहीं मिला। मेरे पास ${ghatCount} घाटों से ${totalReadings} जल गुणवत्ता रीडिंग का डेटा है (2023-2025)।\n\nआप पूछ सकते हैं:\n- किसी घाट पर BOD/DO/pH स्तर\n- घाटों की तुलना\n- CPCB सीमा उल्लंघन\n- पैरामीटर रुझान`
-        : `I couldn't find a specific answer to your question. I have access to ${totalReadings} water quality readings from ${ghatCount} ghats (2023-2025).\n\nYou can ask about:\n- BOD/DO/pH levels at specific ghats\n- Comparison across ghats\n- CPCB limit exceedances\n- Parameter trends`,
-      sources: [],
-    };
-  };
 
   const handleSendMessage = async (message?: string) => {
     const query = message || inputValue.trim();
@@ -266,23 +102,34 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
     setError(null);
 
     try {
-      const response = await generateResponse(query);
+      const response = await sendChatMessage(query, language);
 
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: response.content,
+        content: response.response,
         sources: response.sources,
+        isLLMGenerated: response.isLLMGenerated,
+        notice: response.notice,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
-      setError(language === 'hi' ? 'प्रतिक्रिया उत्पन्न करने में त्रुटि हुई।' : 'Failed to generate response.');
+      setError(
+        language === 'hi'
+          ? 'प्रतिक्रिया प्राप्त करने में विफल। कृपया पुनः प्रयास करें।'
+          : 'Failed to get response. Please try again.'
+      );
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
     }
+  };
+
+  const handleClearConversation = () => {
+    setMessages([]);
+    setError(null);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -296,20 +143,43 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
     <div className="flex flex-col h-[calc(100vh-80px)] max-w-4xl mx-auto">
       {/* Header */}
       <div className="px-6 py-4 border-b border-slate-200 bg-white">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-teal-100 rounded-xl">
-            <Bot className="w-6 h-6 text-teal-700" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-teal-100 rounded-xl">
+              <Bot className="w-6 h-6 text-teal-700" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-slate-900">
+                {language === 'hi' ? 'Ghatरक्षक AI सहायक' : 'Ghatrakshak AI Assistant'}
+              </h1>
+              <p className="text-xs text-slate-500">
+                {language === 'hi'
+                  ? 'ऐतिहासिक जल गुणवत्ता डेटा (2023-2025) पर आधारित'
+                  : 'Evidence-grounded responses from historical data (2023-2025)'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-slate-900">
-              {language === 'hi' ? 'Ghatरक्षक AI सहायक' : 'Ghatrakshak AI Assistant'}
-            </h1>
-            <p className="text-xs text-slate-500">
-              {language === 'hi'
-                ? 'ऐतिहासिक जल गुणवत्ता डेटा (2023-2025) के बारे में प्रश्न पूछें'
-                : 'Ask questions about historical water quality data (2023-2025)'}
-            </p>
-          </div>
+          {messages.length > 0 && (
+            <button
+              onClick={handleClearConversation}
+              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              title={language === 'hi' ? 'वार्तालाप साफ़ करें' : 'Clear conversation'}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Data Notice Banner */}
+      <div className="px-6 py-2 bg-amber-50 border-b border-amber-200">
+        <div className="flex items-center gap-2 text-xs text-amber-800">
+          <Info className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>
+            {language === 'hi'
+              ? 'सभी उत्तर ऐतिहासिक MPPCB रिपोर्ट (2023-2025) पर आधारित हैं। वर्तमान जल गुणवत्ता का प्रतिनिधित्व नहीं करते।'
+              : 'All responses are based on historical MPPCB reports (2023-2025). Does not represent current water quality.'}
+          </span>
         </div>
       </div>
 
@@ -323,8 +193,8 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
             </h2>
             <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
               {language === 'hi'
-                ? 'मैं भोपाल के विसर्जन घाटों के MPPCB निगरानी डेटा (2023-2025) के बारे में प्रश्नों का उत्तर दे सकता हूं।'
-                : 'I can answer questions about MPPCB monitoring data (2023-2025) from Bhopal\'s visarjan ghats.'}
+                ? 'भोपाल के विसर्जन घाटों के MPPCB निगरानी डेटा (2023-2025) के बारे में प्रश्न पूछें।'
+                : "Ask questions about MPPCB monitoring data (2023-2025) from Bhopal's visarjan ghats."}
             </p>
 
             {/* Suggested Questions */}
@@ -359,7 +229,21 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
                   : 'bg-white border border-slate-200 text-slate-800'
               }`}
             >
+              {msg.role === 'assistant' && msg.isLLMGenerated && (
+                <div className="flex items-center gap-1 text-[10px] text-teal-600 mb-2">
+                  <Sparkles className="w-3 h-3" />
+                  <span>AI-generated response</span>
+                </div>
+              )}
+
               <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+
+              {/* Notice */}
+              {msg.notice && (
+                <div className="mt-2 pt-2 border-t border-slate-100">
+                  <p className="text-xs text-amber-600">{msg.notice}</p>
+                </div>
+              )}
 
               {/* Sources */}
               {msg.sources && msg.sources.length > 0 && (
@@ -370,18 +254,28 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
                   </p>
                   <div className="space-y-1">
                     {msg.sources.map((src, idx) => (
-                      <div key={idx} className="text-xs text-slate-600 bg-slate-50 rounded px-2 py-1">
-                        {src.ghat} - {src.parameter} ({src.year}): {src.value}
+                      <div
+                        key={idx}
+                        className="text-xs text-slate-600 bg-slate-50 rounded px-2 py-1"
+                      >
+                        {src.ghat && <span className="font-medium">{src.ghat}</span>}
+                        {src.priority && <span> - {src.priority} priority</span>}
+                        {src.score && <span> (score: {src.score.toFixed(1)})</span>}
+                        {src.period && <span> [{src.period}]</span>}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <p className={`text-[10px] mt-2 ${msg.role === 'user' ? 'text-teal-200' : 'text-slate-400'}`}>
+              <p
+                className={`text-[10px] mt-2 ${
+                  msg.role === 'user' ? 'text-teal-200' : 'text-slate-400'
+                }`}
+              >
                 {msg.timestamp.toLocaleTimeString(language === 'hi' ? 'hi-IN' : 'en-US', {
                   hour: '2-digit',
-                  minute: '2-digit'
+                  minute: '2-digit',
                 })}
               </p>
             </div>
@@ -417,7 +311,11 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={language === 'hi' ? 'जल गुणवत्ता के बारे में प्रश्न पूछें...' : 'Ask about water quality...'}
+            placeholder={
+              language === 'hi'
+                ? 'जल गुणवत्ता के बारे में प्रश्न पूछें...'
+                : 'Ask about water quality...'
+            }
             className="flex-1 px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             disabled={isLoading}
           />
@@ -429,11 +327,6 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ language }) => {
             <Send className="w-5 h-5" />
           </button>
         </div>
-        <p className="text-[10px] text-slate-400 mt-2 text-center">
-          {language === 'hi'
-            ? 'सभी उत्तर ऐतिहासिक MPPCB रिपोर्ट (2023-2025) पर आधारित हैं। वर्तमान जल गुणवत्ता का प्रतिनिधित्व नहीं करते।'
-            : 'All responses are based on historical MPPCB reports (2023-2025). Does not represent current water quality.'}
-        </p>
       </div>
     </div>
   );

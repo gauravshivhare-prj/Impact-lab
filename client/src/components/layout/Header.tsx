@@ -15,7 +15,6 @@ import {
   Check,
   ChevronDown,
   LogOut,
-  Bot,
   FlaskConical,
 } from 'lucide-react';
 import type { NavItemKey } from './Sidebar';
@@ -87,66 +86,15 @@ interface NavItemDef {
 }
 
 const TOP_NAV_ITEMS: NavItemDef[] = [
-  {
-    key: 'overview',
-    labelEn: 'Overview',
-    labelHi: 'अवलोकन',
-    icon: Home,
-  },
-  {
-    key: 'map',
-    labelEn: 'Ghat Map',
-    labelHi: 'घाट मानचित्र',
-    icon: Map,
-  },
-  {
-    key: 'priorities',
-    labelEn: 'Priorities',
-    labelHi: 'प्राथमिकताएं',
-    icon: BarChart2,
-  },
-  {
-    key: 'risk',
-    labelEn: 'Risk Screening',
-    labelHi: 'जोखिम स्क्रीनिंग',
-    icon: Shield,
-  },
-  {
-    key: 'quality',
-    labelEn: 'Water Quality',
-    labelHi: 'जल गुणवत्ता',
-    icon: Droplet,
-  },
-  {
-    key: 'evidence',
-    labelEn: 'Evidence',
-    labelHi: 'साक्ष्य',
-    icon: Search,
-  },
-  {
-    key: 'briefings',
-    labelEn: 'Reports',
-    labelHi: 'रिपोर्ट्स',
-    icon: FileText,
-  },
-  {
-    key: 'methodology',
-    labelEn: 'Methodology',
-    labelHi: 'कार्यप्रणाली',
-    icon: BookOpen,
-  },
-  {
-    key: 'assistant',
-    labelEn: 'AI Assistant',
-    labelHi: 'AI सहायक',
-    icon: Bot,
-  },
-  {
-    key: 'simulator',
-    labelEn: 'What-If',
-    labelHi: 'क्या-अगर',
-    icon: FlaskConical,
-  },
+  { key: 'overview', labelEn: 'Overview', labelHi: 'अवलोकन', icon: Home },
+  { key: 'map', labelEn: 'Map', labelHi: 'मानचित्र', icon: Map },
+  { key: 'priorities', labelEn: 'Priorities', labelHi: 'प्राथमिकताएं', icon: BarChart2 },
+  { key: 'risk', labelEn: 'Risk', labelHi: 'जोखिम', icon: Shield },
+  { key: 'quality', labelEn: 'Quality', labelHi: 'गुणवत्ता', icon: Droplet },
+  { key: 'evidence', labelEn: 'Evidence', labelHi: 'साक्ष्य', icon: Search },
+  { key: 'briefings', labelEn: 'Reports', labelHi: 'रिपोर्ट्स', icon: FileText },
+  { key: 'methodology', labelEn: 'Method', labelHi: 'विधि', icon: BookOpen },
+  { key: 'simulator', labelEn: 'What-If', labelHi: 'क्या-अगर', icon: FlaskConical },
 ];
 
 export const Header: React.FC<HeaderProps> = ({
@@ -204,34 +152,33 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
-      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3">
+    <header className="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-sm">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 py-2 flex items-center justify-between gap-2">
         {/* Left: Brand Identity */}
         <div
           onClick={() => onSelectTab('overview')}
-          className="flex items-center gap-2.5 cursor-pointer flex-shrink-0 group"
-          title="Ghatरक्षक - Home Overview"
+          className="flex items-center gap-2 cursor-pointer flex-shrink-0 group min-w-0"
+          title="घाटरक्षक - Home Overview"
         >
-          {/* Government of Madhya Pradesh / MPSeDC logo */}
           <img
             src="/images/mp-mpsedc-logo.jpg"
             alt="Government of Madhya Pradesh and MPSeDC"
-            className="h-9 sm:h-10 w-auto object-contain"
+            className="h-8 sm:h-9 w-auto object-contain"
             width={480}
             height={230}
           />
-          <div>
-            <div className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
-              Ghatरक्षक
+          <div className="hidden sm:block min-w-0">
+            <div className="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight truncate">
+              घाटरक्षक
             </div>
-            <div className="text-[11px] text-slate-400 font-medium tracking-wide">
+            <div className="text-[10px] text-slate-400 font-medium tracking-wide truncate">
               BMC • Bhopal
             </div>
           </div>
         </div>
 
-        {/* Center: Top Pill Navigation Bar (Desktop) */}
-        <nav className="hidden lg:flex items-center bg-slate-100/90 p-1 rounded-full border border-slate-200/70 shadow-2xs">
+        {/* Center: Navigation (Desktop) */}
+        <nav className="hidden lg:flex items-center bg-slate-100/90 p-0.5 rounded-full border border-slate-200/70 shadow-sm flex-shrink min-w-0 overflow-x-auto">
           {TOP_NAV_ITEMS.map((item) => {
             const isActive =
               currentTab === item.key ||
@@ -244,28 +191,28 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={item.key}
                 onClick={() => onSelectTab(item.key)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all ${
+                className={`px-2 xl:px-2.5 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-1 transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-teal-50 text-teal-800 border border-teal-200/90 shadow-2xs font-bold'
+                    ? 'bg-teal-50 text-teal-800 border border-teal-200/90 shadow-sm font-semibold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-teal-600' : 'text-slate-500'}`} />
-                <span>{language === 'hi' ? item.labelHi : item.labelEn}</span>
+                <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-teal-600' : 'text-slate-500'}`} />
+                <span className="hidden xl:inline">{language === 'hi' ? item.labelHi : item.labelEn}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Right: Year selector & Language button */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Right: Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Year Range Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative hidden sm:block" ref={dropdownRef}>
             <button
               onClick={() => setIsYearDropdownOpen((prev) => !prev)}
               aria-haspopup="listbox"
               aria-expanded={isYearDropdownOpen}
-              className={`flex items-center space-x-1.5 text-xs font-semibold rounded-xl px-3 py-2 shadow-2xs transition-all border ${
+              className={`flex items-center gap-1 text-[11px] font-semibold rounded-lg px-2 py-1.5 shadow-sm transition-all border ${
                 isYearDropdownOpen
                   ? 'bg-teal-50/90 text-teal-900 border-teal-300 ring-2 ring-teal-500/20'
                   : 'text-slate-700 bg-white hover:bg-slate-50 border-slate-200/90'
@@ -277,32 +224,32 @@ export const Header: React.FC<HeaderProps> = ({
               }
             >
               <Calendar className="w-3.5 h-3.5 text-slate-500" />
-              <span className="font-mono">
+              <span className="font-mono hidden md:inline">
                 {language === 'hi' ? currentOption.labelHi : currentOption.labelEn}
               </span>
               <ChevronDown
-                className={`w-3 h-3 text-slate-400 ml-0.5 transition-transform duration-200 ${
+                className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
                   isYearDropdownOpen ? 'rotate-180 text-teal-600' : ''
                 }`}
               />
             </button>
 
-            {/* Dropdown Menu Popup */}
+            {/* Year Dropdown Menu */}
             {isYearDropdownOpen && (
               <div
                 role="listbox"
-                className="absolute right-0 top-full mt-1.5 w-72 bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-900/10 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                className="absolute right-0 top-full mt-1 w-64 bg-white rounded-xl border border-slate-200 shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150"
               >
-                <div className="px-3.5 py-2 border-b border-slate-100 flex items-center justify-between">
+                <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     {language === 'hi' ? 'निगरानी अवधि' : 'Monitoring Period'}
                   </span>
                   <span className="text-[10px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
-                    MPPCB Data
+                    MPPCB
                   </span>
                 </div>
 
-                <div className="p-1 space-y-0.5">
+                <div className="p-1">
                   {YEAR_OPTIONS.map((opt) => {
                     const isSelected = opt.value === activeYear;
                     return (
@@ -311,7 +258,7 @@ export const Header: React.FC<HeaderProps> = ({
                         role="option"
                         aria-selected={isSelected}
                         onClick={() => handleSelectYearOption(opt.value)}
-                        className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-start justify-between gap-2 ${
+                        className={`w-full text-left px-2.5 py-2 rounded-lg transition-all flex items-start justify-between gap-2 ${
                           isSelected
                             ? 'bg-teal-50 text-teal-900 font-medium'
                             : 'text-slate-700 hover:bg-slate-50'
@@ -334,24 +281,14 @@ export const Header: React.FC<HeaderProps> = ({
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                          <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">
                             {language === 'hi' ? opt.subHi : opt.subEn}
                           </p>
                         </div>
-                        {isSelected && (
-                          <Check className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" />
-                        )}
+                        {isSelected && <Check className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" />}
                       </button>
                     );
                   })}
-                </div>
-
-                <div className="px-3 py-2 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl">
-                  <p className="text-[10px] text-slate-400 leading-tight">
-                    {language === 'hi'
-                      ? 'आधिकारिक मध्य प्रदेश प्रदूषण नियंत्रण बोर्ड (MPPCB) विसर्जन रिपोर्ट'
-                      : 'Official MPPCB Immersion Monitoring Reports'}
-                  </p>
                 </div>
               </div>
             )}
@@ -360,27 +297,26 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Language Switcher */}
           <button
             onClick={onToggleLanguage}
-            className="flex items-center space-x-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-2 shadow-2xs transition-colors"
+            className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-lg px-2 py-1.5 shadow-sm transition-colors"
             title="Switch Language"
           >
             <Globe className="w-3.5 h-3.5 text-slate-500" />
-            <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
+            <span className="hidden sm:inline">{language === 'en' ? 'हिं' : 'EN'}</span>
           </button>
 
           {/* Logout */}
           <button
             onClick={handleLogout}
-            className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200/90 hover:border-rose-200 rounded-xl px-3 py-2 shadow-2xs transition-colors"
+            className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-600 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200/90 hover:border-rose-200 rounded-lg px-2 py-1.5 shadow-sm transition-colors"
             title={language === 'hi' ? 'लॉग आउट' : 'Logout'}
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>{language === 'hi' ? 'लॉग आउट' : 'Logout'}</span>
           </button>
 
-          {/* Mobile Menu Toggle Button */}
+          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 lg:hidden"
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 lg:hidden"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -388,9 +324,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation (screens < lg) */}
+      {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1">
+        <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
           {TOP_NAV_ITEMS.map((item) => {
             const isActive =
               currentTab === item.key ||
@@ -405,7 +341,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectTab(item.key);
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+                className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2.5 transition-colors ${
                   isActive
                     ? 'bg-teal-50 text-teal-800'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -417,7 +353,7 @@ export const Header: React.FC<HeaderProps> = ({
             );
           })}
 
-          {/* Year Selector in mobile drawer */}
+          {/* Mobile Year Selector */}
           <div className="pt-2 pb-1 border-t border-slate-100 mt-2">
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 px-1">
               {language === 'hi' ? 'निगरानी अवधि' : 'Monitoring Period'}
@@ -449,7 +385,7 @@ export const Header: React.FC<HeaderProps> = ({
                 setMobileMenuOpen(false);
                 handleLogout();
               }}
-              className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-rose-600 hover:bg-rose-50 transition-colors"
+              className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2.5 text-rose-600 hover:bg-rose-50 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               <span>{language === 'hi' ? 'लॉग आउट' : 'Logout'}</span>

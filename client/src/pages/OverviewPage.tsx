@@ -80,14 +80,6 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
 
   return (
     <div className="relative min-h-[calc(100vh-62px)] overflow-hidden pb-12 font-sans">
-      {/* Scenic Bhopal Lake Background - fully visible across entire page */}
-      <div
-        className="fixed inset-0 top-[53px] bg-cover bg-center bg-no-repeat pointer-events-none z-0"
-        style={{
-          backgroundImage: `url('/images/bhopal_lake_hero.jpg')`,
-        }}
-      />
-
       <div className="relative z-10 max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 space-y-6">
         {/* Hero Text Section */}
         <div className="max-w-2xl space-y-3">

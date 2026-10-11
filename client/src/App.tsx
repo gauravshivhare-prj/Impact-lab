@@ -3,6 +3,7 @@ import type { NavItemKey } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { EvidenceDrawer } from './components/evidence/EvidenceDrawer';
 import { GhatDetailModal } from './components/ghat/GhatDetailModal';
+import { FloatingAssistant } from './components/assistant/FloatingAssistant';
 import { dataService } from './services/dataService';
 import { OverviewPage } from './pages/OverviewPage';
 import { GhatMapPage } from './pages/GhatMapPage';
@@ -13,7 +14,6 @@ import { DataQualityPage } from './pages/DataQualityPage';
 import { RiskScreeningPage } from './pages/RiskScreeningPage';
 import { BriefingPage } from './pages/BriefingPage';
 import { MethodologyPage } from './pages/MethodologyPage';
-import { AssistantPage } from './pages/AssistantPage';
 import { SimulatorPage } from './pages/SimulatorPage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
@@ -126,7 +126,17 @@ function AppContent() {
 
   // Municipal Officer Dashboard (main application)
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
+    <div className="min-h-screen font-sans text-slate-900 flex flex-col relative">
+      {/* Shared Background Image - visible across all pages */}
+      <div
+        className="fixed inset-0 top-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0"
+        style={{
+          backgroundImage: `url('/images/bhopal_lake_hero.jpg')`,
+        }}
+      />
+      {/* Subtle overlay for readability */}
+      <div className="fixed inset-0 bg-slate-50/40 pointer-events-none z-0" />
+
       {/* Top Navigation Header */}
       <Header
         currentTab={currentTab}
@@ -141,10 +151,10 @@ function AppContent() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         {dataSource === 'embedded' && currentTab !== 'overview' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 w-full">
-            <div className="rounded border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+            <div className="rounded border border-amber-200 bg-amber-50/90 backdrop-blur-sm px-4 py-2 text-xs text-amber-800">
               The GhatRakshak API is not reachable, so the bundled copy of the 2023–2025 dataset is being shown.
             </div>
           </div>
@@ -221,16 +231,15 @@ function AppContent() {
               <MethodologyPage language={language} />
             )}
 
-            {currentTab === 'assistant' && (
-              <AssistantPage language={language} />
-            )}
-
             {currentTab === 'simulator' && (
               <SimulatorPage language={language} />
             )}
           </main>
         )}
       </div>
+
+      {/* Floating AI Assistant */}
+      <FloatingAssistant language={language} />
 
       {/* Granular Evidence Inspection Drawer */}
       <EvidenceDrawer

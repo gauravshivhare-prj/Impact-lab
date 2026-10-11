@@ -9,6 +9,7 @@ import ghatRoutes from './routes/ghat.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import scenarioRoutes from './routes/scenario.routes.js';
 import assistantRoutes from './routes/assistant.routes.js';
+import simulationRoutes from './routes/simulation.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { createReportRoutes } from './routes/report.routes.js';
@@ -35,6 +36,7 @@ export function createApp({ config, dataContext, fetchImpl }) {
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
   app.locals.dataContext = dataContext;
+  app.locals.config = config;
 
   app.use(
     helmet({
@@ -86,6 +88,7 @@ export function createApp({ config, dataContext, fetchImpl }) {
   app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
   app.use(`${API_PREFIX}/scenarios`, scenarioRoutes);
   app.use(`${API_PREFIX}/assistant`, assistantRoutes);
+  app.use(`${API_PREFIX}/simulations`, simulationRoutes);
   app.use(`${API_PREFIX}/reports`, createReportRoutes());
   app.use(`${API_PREFIX}/risk`, createRiskRoutes({ engineUrl: config.engineUrl, fetchImpl }));
 

@@ -24,7 +24,6 @@ export type NavItemKey =
   | 'data-quality'
   | 'briefings'
   | 'methodology'
-  | 'assistant'
   | 'simulator';
 
 interface SidebarProps {

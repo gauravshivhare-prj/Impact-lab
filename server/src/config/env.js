@@ -46,5 +46,7 @@ export function loadEnv(source = process.env) {
     clientOrigins: parseOrigins(source.CLIENT_ORIGIN, isProduction),
     engineUrl: (source.ENGINE_URL || DEFAULT_ENGINE_URL).replace(/\/+$/, ''),
     trustProxy: parseInteger('TRUST_PROXY', source.TRUST_PROXY, { min: 0, max: 10, fallback: 0 }),
+    openaiApiKey: source.OPENAI_API_KEY || null,
+    openaiModel: source.OPENAI_MODEL || 'gpt-4o-mini',
   });
 }
