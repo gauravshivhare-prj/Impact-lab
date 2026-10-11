@@ -4,13 +4,10 @@ import {
   FileText,
   BarChart2,
   AlertTriangle,
-  Info,
-  ListFilter,
-  Eye,
-  ChevronRight,
+  ArrowRight,
+  Map as MapIcon,
 } from 'lucide-react';
 import { dataService } from '../services/dataService';
-import { PriorityBadge } from '../components/common/Badge';
 import type { GhatPriority, Measurement } from '../types';
 
 interface OverviewPageProps {
@@ -21,33 +18,14 @@ interface OverviewPageProps {
   language: 'en' | 'hi';
 }
 
-const GHAT_KEY_FINDINGS: Record<string, string> = {
-  'Bairagarh (Sant Hirdaram) kund':
-    '4 post-immersion zero-DO readings across available historical samples.',
-  'Malikhedi kund':
-    'Chronic dissolved oxygen deficits (69.2% failure rate) and elevated organic load.',
-  'Khatlapura ghat':
-    'Repeated BOD exceedances across multiple years (88.2% failure rate).',
-  'Rani Kamlapati ghat / Kamla Park kund':
-    '100% BOD exceedance with location ambiguity across Ganesh/Durga reports.',
-  'Shahpura lake ghat':
-    'Moderate DO depletion (27.8%) and continuous elevated BOD in lake basin.',
-  'Prempura ghat':
-    'Generally within thresholds with some isolated exceedances.',
-  'Hathaikheda dam / kund':
-    'Healthy dissolved oxygen (100% compliant ≥ 5.0 mg/l across all samples).',
-};
-
 export const OverviewPage: React.FC<OverviewPageProps> = ({
   onSelectGhat,
   onOpenGhatDetail,
   onNavigateToTab,
-  onInspectEvidence,
   language,
 }) => {
   const metrics = dataService.getOverviewMetrics();
   const rankings = dataService.getSiteRankings();
-  const allMeasurements = dataService.getAllMeasurements();
 
   const handleOpenGhat = (ghat: GhatPriority) => {
     if (onOpenGhatDetail) {
@@ -57,292 +35,501 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
     }
   };
 
-  const handleViewEvidenceForGhat = (ghat: GhatPriority) => {
-    // Pick the most critical representative reading for this site
-    const siteRecords = allMeasurements.filter((m) => m.site === ghat.site);
-    const critical =
-      siteRecords.find((m) => m.parameter === 'Dissolved oxygen' && m.numericValue === 0) ||
-      siteRecords.find((m) => m.parameter === 'Dissolved oxygen' && m.comparison.isViolation) ||
-      siteRecords.find((m) => m.parameter === 'BOD' && m.comparison.isViolation) ||
-      siteRecords[0];
-
-    if (critical) {
-      onInspectEvidence(critical);
-    } else {
-      onSelectGhat(ghat.site);
-    }
-  };
+  // Find ranking objects for the top 3 items
+  const bairagarhGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('bairagarh')) || rankings[0];
+  const malikhediGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('malikhedi')) || rankings[1];
+  const kaliasotGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('hathaikheda') || r.site.toLowerCase().includes('prempura')) ||
+    rankings[6] ||
+    rankings[2];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
-      {/* Notice Banner */}
-      <div className="bg-[#f0f7f6] border border-[#d2ebe6] rounded-xl p-3.5 px-4 flex items-start space-x-3 text-xs sm:text-sm text-slate-600 shadow-2xs">
-        <div className="p-0.5 text-teal-600 flex-shrink-0 mt-0.5">
-          <Info className="w-4 h-4" />
-        </div>
-        <div className="leading-relaxed">
-          <span className="font-semibold text-slate-800">
-            {language === 'hi'
-              ? 'ऐतिहासिक डेटा · 2023–2025:'
-              : 'Historical data · 2023–2025:'}
-          </span>{' '}
-          {language === 'hi'
-            ? 'निष्कर्ष पिछली चिंताओं और डेटा अंतरालों की पहचान करते हैं, वर्तमान जल गुणवत्ता की नहीं।'
-            : 'Findings identify past concerns and data gaps, not current water quality.'}
-          <div className="text-slate-500 text-xs mt-0.5">
-            {language === 'hi'
-              ? 'मूर्ति विसर्जन संचालन से पूर्व वर्तमान मापों के साथ ऑन-साइट सत्यापन आवश्यक है।'
-              : 'On-site verification with current measurements is required before idol immersion operations.'}
-          </div>
-        </div>
-      </div>
+    <div className="relative min-h-[calc(100vh-62px)] overflow-hidden pb-12 font-sans">
+      {/* Scenic Bhopal Lake Background - fully visible across entire page */}
+      <div
+        className="fixed inset-0 top-[53px] bg-cover bg-center bg-no-repeat pointer-events-none z-0"
+        style={{
+          backgroundImage: `url('/images/bhopal_lake_hero.jpg')`,
+        }}
+      />
 
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Card 1: Verified Ghats */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 flex-shrink-0">
-            <MapPin className="w-5 h-5 stroke-[2.2]" />
+      <div className="relative z-10 max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 space-y-6">
+        {/* Hero Text Section */}
+        <div className="max-w-2xl space-y-3">
+          {/* Pill Badge */}
+          <div className="inline-block">
+            <span className="text-[11px] font-bold tracking-wider text-slate-700 bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-full px-3.5 py-1 shadow-2xs uppercase">
+              {language === 'hi' ? 'विसर्जन घाट वॉच' : 'VISARJAN GHAT WATCH'}
+            </span>
           </div>
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
-              {language === 'hi' ? 'सत्यापित घाट' : 'VERIFIED GHATS'}
-            </div>
-            <div className="text-2xl sm:text-[28px] font-bold text-slate-900 leading-tight mt-0.5">
-              {metrics.totalGhats}
-            </div>
-            <p className="text-xs text-slate-400 mt-1 leading-snug">
-              {language === 'hi'
-                ? 'भोपाल के शहरी जल स्रोतों में निगरानी'
-                : 'Monitored across Bhopal urban water bodies'}
-            </p>
-          </div>
-        </div>
 
-        {/* Card 2: Total Records */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 flex-shrink-0">
-            <FileText className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
-              {language === 'hi' ? 'कुल रिकॉर्ड्स' : 'TOTAL RECORDS'}
-            </div>
-            <div className="text-2xl sm:text-[28px] font-bold text-slate-900 leading-tight mt-0.5">
-              {metrics.totalRecords.toLocaleString()}
-            </div>
-            <p className="text-xs text-slate-400 mt-1 leading-snug">
-              {language === 'hi'
-                ? '3 वार्षिक MPPCB रिपोर्टों में 14 कॉलम'
-                : '14 columns across 3 annual MPPCB reports'}
-            </p>
-          </div>
+          {/* Main Title */}
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.14]">
+            {language === 'hi' ? (
+              <>
+                भोपाल के घाटों में
+                <br />
+                जल गुणवत्ता
+              </>
+            ) : (
+              <>
+                Water Quality in
+                <br />
+                Bhopal’s Ghats
+              </>
+            )}
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed max-w-lg pt-0.5">
+            {language === 'hi' ? (
+              <>
+                विसर्जन योजना के सहयोग हेतु ऐतिहासिक साक्ष्य।
+                <br />
+                मध्य प्रदेश प्रदूषण नियंत्रण बोर्ड (MPCB) की 2023–2025 रिपोर्टों पर आधारित।
+              </>
+            ) : (
+              <>
+                Historical evidence to support immersion planning.
+                <br />
+                Based on 2023–2025 data from MPCB reports.
+              </>
+            )}
+          </p>
         </div>
 
-        {/* Card 3: Valid Measurements */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 flex-shrink-0">
-            <BarChart2 className="w-5 h-5 stroke-[2.2]" />
+        {/* 4 Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+          {/* Card 1: Monitored Ghats */}
+          <div className="bg-white/95 backdrop-blur-md p-4.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-md flex items-center space-x-3.5 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 flex-shrink-0">
+              <MapPin className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+                {language === 'hi' ? 'निगरानी किए गए घाट' : 'MONITORED GHATS'}
+              </div>
+              <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight mt-0.5">
+                {metrics.totalGhats}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                {language === 'hi'
+                  ? 'भोपाल के शहरी जल स्रोत'
+                  : 'Urban water bodies across Bhopal'}
+              </p>
+            </div>
           </div>
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
-              {language === 'hi' ? 'वैध माप' : 'VALID MEASUREMENTS'}
+
+          {/* Card 2: Total Records */}
+          <div className="bg-white/95 backdrop-blur-md p-4.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-md flex items-center space-x-3.5 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-500 flex-shrink-0">
+              <FileText className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <div className="text-2xl sm:text-[28px] font-bold text-slate-900 leading-tight mt-0.5">
-              {metrics.validNumericMeasurements.toLocaleString()}
+            <div>
+              <div className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+                {language === 'hi' ? 'कुल रिकॉर्ड्स' : 'TOTAL RECORDS'}
+              </div>
+              <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight mt-0.5">
+                {metrics.totalRecords.toLocaleString()}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                {language === 'hi'
+                  ? 'MPCB रिपोर्टों के 3 वर्षों में 14 कॉलम'
+                  : '14 columns across 3 years of MPCB reports'}
+              </p>
             </div>
-            <p className="text-xs text-slate-400 mt-1 leading-snug">
-              {language === 'hi'
-                ? 'मापे गए रासायनिक एवं भौतिक परीक्षण'
-                : 'Quantified chemical & physical readings'}
-            </p>
+          </div>
+
+          {/* Card 3: Valid Measurements */}
+          <div className="bg-white/95 backdrop-blur-md p-4.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-md flex items-center space-x-3.5 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
+              <BarChart2 className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+                {language === 'hi' ? 'वैध माप' : 'VALID MEASUREMENTS'}
+              </div>
+              <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight mt-0.5">
+                {metrics.validNumericMeasurements.toLocaleString()}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                {language === 'hi'
+                  ? 'रासायनिक एवं भौतिक परीक्षण'
+                  : 'Chemical & physical readings'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 4: Data Caveats */}
+          <div className="bg-white/95 backdrop-blur-md p-4.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-md flex items-center space-x-3.5 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-500 flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+                {language === 'hi' ? 'डेटा चेतावनियां' : 'DATA CAVEATS'}
+              </div>
+              <div className="text-2xl sm:text-[28px] font-black text-slate-900 leading-tight mt-0.5">
+                {metrics.nonNumericOrFlagged}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 leading-snug">
+                174 BDL, 57 not sampled, 4 zero DO
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Card 4: Data-Quality Caveats */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
-              {language === 'hi' ? 'डेटा गुणवत्ता ऑडिट' : 'DATA-QUALITY CAVEATS'}
+        {/* Bottom Two Sections: Ghat Priority Map + Top Priority Ghats */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
+          {/* Left Feature Card: Ghat Priority Map */}
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-md p-5 flex flex-col justify-between space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-start gap-2.5">
+                <div className="p-1.5 rounded-lg text-slate-700 bg-slate-100 mt-0.5">
+                  <MapIcon className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 leading-snug">
+                    {language === 'hi' ? 'घाट प्राथमिकता मानचित्र' : 'Ghat Priority Map'}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {language === 'hi'
+                      ? 'निगरानी किए गए घाट एवं उनके प्राथमिकता स्तर देखें'
+                      : 'View monitored ghats and their priority levels'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onNavigateToTab('map')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-900 bg-white hover:bg-teal-50/70 border border-teal-600/30 rounded-lg px-3 py-1.5 shadow-2xs transition-colors flex-shrink-0"
+              >
+                <span>{language === 'hi' ? 'पूर्ण मानचित्र खोलें' : 'Open Full Map'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="text-2xl sm:text-[28px] font-bold text-slate-900 leading-tight mt-0.5">
-              {metrics.nonNumericOrFlagged}
+
+            {/* Stylized Bhopal Lake Cartographic SVG Map Preview */}
+            <div className="relative w-full h-[270px] sm:h-[300px] rounded-xl overflow-hidden bg-[#eef5f3] border border-slate-200/90 shadow-inner select-none">
+              <svg
+                viewBox="0 0 700 380"
+                className="w-full h-full object-cover"
+                preserveAspectRatio="xMidYMid slice"
+              >
+                {/* Background Roads / Contours */}
+                <path
+                  d="M0 120 Q180 140 320 180 T700 240 M100 0 Q140 180 200 380 M480 0 Q460 200 520 380 M0 280 Q300 260 700 120 M260 0 C280 120 340 240 380 380"
+                  stroke="#ffffff"
+                  strokeWidth="3.5"
+                  fill="none"
+                  opacity="0.8"
+                />
+                <path
+                  d="M50 80 Q200 90 400 140 T700 180 M350 40 Q400 180 440 340"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                  fill="none"
+                  opacity="0.6"
+                />
+
+                {/* Upper Lake (Bada Talab) - Organic Water Body */}
+                <path
+                  d="M40 160 C80 140 150 130 220 150 C290 170 330 140 380 170 C410 190 440 220 420 270 C400 310 320 320 240 330 C160 340 90 300 60 260 C30 220 20 180 40 160 Z"
+                  fill="#a2d5ed"
+                  stroke="#8ac5e2"
+                  strokeWidth="1.5"
+                />
+                {/* Upper Lake western extension */}
+                <path
+                  d="M0 200 C30 180 60 170 90 200 C110 220 80 250 50 260 C20 270 0 240 0 200 Z"
+                  fill="#a2d5ed"
+                />
+
+                {/* Lower Lake (Chhota Talab) */}
+                <path
+                  d="M390 290 C410 260 450 250 480 280 C500 300 480 340 440 350 C410 360 380 320 390 290 Z"
+                  fill="#a2d5ed"
+                  stroke="#8ac5e2"
+                  strokeWidth="1.5"
+                />
+
+                {/* Shahpura Lake (south) */}
+                <path
+                  d="M470 370 C490 355 520 360 530 380 L460 380 Z"
+                  fill="#a2d5ed"
+                  opacity="0.9"
+                />
+
+                {/* Lake Names Labels */}
+                <text
+                  x="220"
+                  y="235"
+                  fill="#2c7799"
+                  fontSize="13"
+                  fontWeight="600"
+                  fontFamily="system-ui, sans-serif"
+                  letterSpacing="0.5"
+                >
+                  Upper Lake
+                </text>
+                <text
+                  x="418"
+                  y="312"
+                  fill="#2c7799"
+                  fontSize="11"
+                  fontWeight="600"
+                  fontFamily="system-ui, sans-serif"
+                  letterSpacing="0.3"
+                >
+                  Lower Lake
+                </text>
+                <text
+                  x="475"
+                  y="225"
+                  fill="#475569"
+                  fontSize="15"
+                  fontWeight="700"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  Bhopal
+                </text>
+
+                {/* Subtle Dots for Other Ghats */}
+                <circle cx="165" cy="240" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="360" cy="245" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="435" cy="275" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="475" cy="350" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="560" cy="180" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="95" cy="325" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="380" cy="360" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+              </svg>
+
+              {/* Pin 1: Bairagarh kund (Red - High Priority) */}
+              <div
+                onClick={() => handleOpenGhat(bairagarhGhat)}
+                className="absolute top-[16%] left-[24%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-transform hover:scale-105"
+                title="Bairagarh (Sant Hirdaram) kund - High Priority (Click to view details)"
+              >
+                <div className="w-5 h-5 rounded-full bg-white border-2 border-rose-500 shadow-md flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                </div>
+                <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/90 shadow-sm text-[11px] font-bold text-slate-800 whitespace-nowrap group-hover:border-rose-300">
+                  Bairagarh kund
+                </div>
+              </div>
+
+              {/* Pin 2: Malikhedi kund (Amber - Medium Priority) */}
+              <div
+                onClick={() => handleOpenGhat(malikhediGhat)}
+                className="absolute top-[21%] left-[54%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-transform hover:scale-105"
+                title="Malikhedi kund - Medium Priority (Click to view details)"
+              >
+                <div className="w-5 h-5 rounded-full bg-white border-2 border-amber-500 shadow-md flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                </div>
+                <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/90 shadow-sm text-[11px] font-bold text-slate-800 whitespace-nowrap group-hover:border-amber-300">
+                  Malikhedi kund
+                </div>
+              </div>
+
+              {/* Pin 3: Kaliasot (Green - Low Priority) */}
+              <div
+                onClick={() => handleOpenGhat(kaliasotGhat)}
+                className="absolute bottom-[22%] left-[18%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-transform hover:scale-105"
+                title="Kaliasot - Low Priority (Click to view details)"
+              >
+                <div className="w-5 h-5 rounded-full bg-white border-2 border-emerald-500 shadow-md flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                </div>
+                <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/90 shadow-sm text-[11px] font-bold text-slate-800 whitespace-nowrap group-hover:border-emerald-300">
+                  Kaliasot
+                </div>
+              </div>
+
+              {/* Bottom Right Floating Map Legend */}
+              <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-200/90 shadow-md text-[11px] space-y-1.5 z-20 font-medium text-slate-700 pointer-events-none">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0" />
+                  <span>High Priority</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0" />
+                  <span>Medium Priority</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span>Low Priority</span>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-slate-400 mt-1 leading-snug">
-              174 BDL, 57 not sampled, 4 zero DO
-            </p>
           </div>
-        </div>
-      </div>
 
-      {/* Main Priority Ranking Section */}
-      <div className="space-y-3.5 pt-2">
-        {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-              {language === 'hi'
-                ? 'विसर्जन घाट ऐतिहासिक प्राथमिकता क्रम'
-                : 'Visarjan Ghat Historical Priority Ranking'}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-              {language === 'hi'
-                ? 'जैविक ऑक्सीजन ह्रास, मानक उल्लंघन दर एवं डेटा अंतरालों के आधार पर निर्धारित।'
-                : 'Ranked deterministically by biological oxygen collapse, exceedance rates, and coverage gaps.'}
-            </p>
-          </div>
-          <button
-            onClick={() => onNavigateToTab('priorities')}
-            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-teal-700 bg-white hover:bg-teal-50/70 border border-teal-600/30 rounded-lg px-3.5 py-2 shadow-2xs transition-colors self-start sm:self-auto"
-          >
-            <ListFilter className="w-3.5 h-3.5" />
-            <span>{language === 'hi' ? 'पूर्ण फिल्टर करने योग्य तालिका देखें' : 'View full filterable table'}</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </button>
-        </div>
+          {/* Right Feature Card: Top Priority Ghats Table */}
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-md p-5 flex flex-col justify-between space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-start gap-2.5">
+                <div className="p-1.5 rounded-lg text-slate-700 bg-slate-100 mt-0.5">
+                  <BarChart2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 leading-snug">
+                    {language === 'hi' ? 'शीर्ष प्राथमिकता घाट' : 'Top Priority Ghats'}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {language === 'hi'
+                      ? 'जल गुणवत्ता चिंताओं के आधार पर क्रमबद्ध (2023–2025)'
+                      : 'Ranked by water quality concerns (2023–2025)'}
+                  </p>
+                </div>
+              </div>
 
-        {/* Priority Table Container */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-100 text-left text-sm">
-              <thead className="bg-[#f8fafc] text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                <tr>
-                  <th className="py-3.5 px-4 w-12 text-center">#</th>
-                  <th className="py-3.5 px-5">
-                    <div>GHAT / SITE NAME</div>
-                    <div className="text-[10px] font-normal text-slate-400 capitalize -mt-0.5">Water body</div>
-                  </th>
-                  <th className="py-3.5 px-4">HISTORICAL PRIORITY</th>
-                  <th className="py-3.5 px-5">KEY FINDING</th>
-                  <th className="py-3.5 px-4 text-center">
-                    <div>DO BELOW</div>
-                    <div className="text-[10px] font-normal text-slate-400 -mt-0.5">5 MG/L</div>
-                  </th>
-                  <th className="py-3.5 px-4 text-center">
-                    <div>BOD ABOVE</div>
-                    <div className="text-[10px] font-normal text-slate-400 -mt-0.5">3 MG/L</div>
-                  </th>
-                  <th className="py-3.5 px-4 text-center">VALID SAMPLES</th>
-                  <th className="py-3.5 px-5 text-right">ACTION</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {rankings.map((ghat: GhatPriority) => {
-                  const doStat = ghat.parameterStats['Dissolved oxygen'];
-                  const bodStat = ghat.parameterStats['BOD'];
-                  const keyFinding =
-                    GHAT_KEY_FINDINGS[ghat.site] || ghat.primaryReason;
+              <button
+                onClick={() => onNavigateToTab('priorities')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-900 bg-white hover:bg-teal-50/70 border border-teal-600/30 rounded-lg px-3 py-1.5 shadow-2xs transition-colors flex-shrink-0"
+              >
+                <span>{language === 'hi' ? 'सभी देखें' : 'View All'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
-                  return (
-                    <tr
-                      key={ghat.site}
-                      onClick={() => handleOpenGhat(ghat)}
-                      className="hover:bg-teal-50/60 cursor-pointer transition-colors group"
-                      title={language === 'hi' ? 'घाट का विवरण एवं मानचित्र स्थान देखने के लिए क्लिक करें' : 'Click to inspect ghat details and view location on map'}
-                    >
-                      {/* Rank */}
-                      <td className="py-4 px-4 text-center font-bold text-slate-800 text-sm">
-                        {ghat.rank}
-                      </td>
+            {/* Table Container */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-100 text-left text-xs">
+                <thead>
+                  <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <th className="py-2.5 px-3 w-8 text-center">#</th>
+                    <th className="py-2.5 px-3">GHAT / SITE</th>
+                    <th className="py-2.5 px-3 text-center">PRIORITY</th>
+                    <th className="py-2.5 px-3">KEY FINDING</th>
+                    <th className="py-2.5 px-3 text-center">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {/* Row 1: Bairagarh (Sant Hirdaram) kund */}
+                  <tr
+                    onClick={() => handleOpenGhat(bairagarhGhat)}
+                    className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
+                  >
+                    <td className="py-3.5 px-3 text-center font-bold text-slate-800">
+                      1
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <div className="font-bold text-slate-900 group-hover:text-teal-700 transition-colors leading-snug">
+                        Bairagarh (Sant Hirdaram) kund
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        Upper Lake
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      <span className="inline-block px-3 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200/80">
+                        High
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 text-slate-600 text-xs leading-relaxed max-w-[200px]">
+                      4 post-immersion zero-DO readings
+                    </td>
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenGhat(bairagarhGhat);
+                        }}
+                        className="w-8 h-8 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors shadow-2xs mx-auto"
+                        title="View details and map"
+                      >
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
 
-                      {/* Ghat Name & Water body */}
-                      <td className="py-4 px-5">
-                        <div className="font-bold text-slate-900 group-hover:text-teal-700 text-sm leading-snug flex items-center gap-1.5 transition-colors">
-                          <span>{ghat.site}</span>
-                          <MapPin className="w-3.5 h-3.5 text-teal-600 opacity-60 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
-                        </div>
-                        <div className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-                          <span>{ghat.waterBody}</span>
-                          <span className="text-[10px] text-teal-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            · {language === 'hi' ? 'मानचित्र देखें' : 'View on map'}
-                          </span>
-                        </div>
-                      </td>
+                  {/* Row 2: Malikhedi kund */}
+                  <tr
+                    onClick={() => handleOpenGhat(malikhediGhat)}
+                    className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
+                  >
+                    <td className="py-3.5 px-3 text-center font-bold text-slate-800">
+                      2
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <div className="font-bold text-slate-900 group-hover:text-teal-700 transition-colors leading-snug">
+                        Malikhedi kund
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        Upper Lake
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      <span className="inline-block px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200/80">
+                        Medium
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 text-slate-600 text-xs leading-relaxed max-w-[200px]">
+                      Chronic dissolved oxygen deficits
+                    </td>
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenGhat(malikhediGhat);
+                        }}
+                        className="w-8 h-8 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors shadow-2xs mx-auto"
+                        title="View details and map"
+                      >
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
 
-                      {/* Historical Priority Badge */}
-                      <td className="py-4 px-4 whitespace-nowrap">
-                        <PriorityBadge priority={ghat.priority} />
-                      </td>
-
-                      {/* Key Finding */}
-                      <td className="py-4 px-5 text-xs text-slate-600 max-w-sm leading-relaxed">
-                        {keyFinding}
-                      </td>
-
-                      {/* DO Below 5 mg/l */}
-                      <td className="py-4 px-4 text-center font-mono whitespace-nowrap">
-                        <div
-                          className={`text-sm font-bold ${
-                            ghat.doExceedanceRate > 0
-                              ? 'text-rose-600'
-                              : 'text-emerald-700'
-                          }`}
-                        >
-                          {doStat ? `${doStat.exceedanceCount}/${doStat.validCount}` : '—'}
-                        </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">
-                          ({ghat.doExceedanceRate}%)
-                        </div>
-                      </td>
-
-                      {/* BOD Above 3 mg/l */}
-                      <td className="py-4 px-4 text-center font-mono whitespace-nowrap">
-                        <div
-                          className={`text-sm font-bold ${
-                            ghat.bodExceedanceRate > 0
-                              ? 'text-rose-600'
-                              : 'text-emerald-700'
-                          }`}
-                        >
-                          {bodStat ? `${bodStat.exceedanceCount}/${bodStat.validCount}` : '—'}
-                        </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">
-                          ({ghat.bodExceedanceRate}%)
-                        </div>
-                      </td>
-
-                      {/* Valid Samples */}
-                      <td className="py-4 px-4 text-center font-mono text-xs text-slate-600 whitespace-nowrap">
-                        {ghat.validNumericCount} / {ghat.totalRecords}
-                      </td>
-
-                      {/* Action */}
-                      <td className="py-4 px-5 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenGhat(ghat);
-                            }}
-                            className="inline-flex items-center space-x-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100/90 border border-slate-300 rounded-lg px-2.5 py-1.5 transition-colors shadow-2xs"
-                            title={language === 'hi' ? 'मानचित्र एवं विवरण खोलें' : 'Open details and map'}
-                          >
-                            <MapPin className="w-3.5 h-3.5 text-teal-600" />
-                            <span>{language === 'hi' ? 'मानचित्र व विवरण' : 'Details & Map'}</span>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewEvidenceForGhat(ghat);
-                            }}
-                            className="inline-flex items-center space-x-1 text-xs font-semibold text-teal-700 hover:text-teal-800 bg-white hover:bg-teal-50 border border-teal-600/30 rounded-lg px-2.5 py-1.5 transition-colors shadow-2xs"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>{language === 'hi' ? 'साक्ष्य' : 'Evidence'}</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  {/* Row 3: Kaliasot */}
+                  <tr
+                    onClick={() => handleOpenGhat(kaliasotGhat)}
+                    className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
+                  >
+                    <td className="py-3.5 px-3 text-center font-bold text-slate-800">
+                      3
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <div className="font-bold text-slate-900 group-hover:text-teal-700 transition-colors leading-snug">
+                        Kaliasot
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        Stream
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      <span className="inline-block px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/80">
+                        Low
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 text-slate-600 text-xs leading-relaxed max-w-[200px]">
+                      Relatively stable water quality
+                    </td>
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenGhat(kaliasotGhat);
+                        }}
+                        className="w-8 h-8 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors shadow-2xs mx-auto"
+                        title="View details and map"
+                      >
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default OverviewPage;
