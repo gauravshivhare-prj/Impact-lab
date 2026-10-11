@@ -58,11 +58,21 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
     }
   };
 
-  // Find ranking objects for the top 3 items
+  // Find ranking objects for all 7 monitored ghats
   const bairagarhGhat =
     rankings.find((r) => r.site.toLowerCase().includes('bairagarh')) || rankings[0];
   const malikhediGhat =
     rankings.find((r) => r.site.toLowerCase().includes('malikhedi')) || rankings[1];
+  const kamlaParkGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('kamla')) || rankings[2];
+  const prempuraGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('prempura')) || rankings[3];
+  const khatlapuraGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('khatlapura')) || rankings[4];
+  const shahpuraGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('shahpura')) || rankings[5];
+  const hathaikhedaGhat =
+    rankings.find((r) => r.site.toLowerCase().includes('hathaikheda')) || rankings[6];
   const kaliasotGhat =
     rankings.find((r) => r.site.toLowerCase().includes('hathaikheda') || r.site.toLowerCase().includes('prempura')) ||
     rankings[6] ||
@@ -207,7 +217,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         {/* Bottom Two Sections: Ghat Priority Map + Top Priority Ghats */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
           {/* Left Feature Card: Ghat Priority Map */}
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-md p-5 flex flex-col justify-between space-y-4">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-md p-5 flex flex-col space-y-3.5 h-full">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-start gap-2.5">
@@ -236,155 +246,203 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </div>
 
             {/* Stylized Bhopal Lake Cartographic SVG Map Preview */}
-            <div className="relative w-full h-[270px] sm:h-[300px] rounded-xl overflow-hidden bg-[#eef5f3] border border-slate-200/90 shadow-inner select-none">
-              <svg
-                viewBox="0 0 700 380"
-                className="w-full h-full object-cover"
-                preserveAspectRatio="xMidYMid slice"
-              >
-                {/* Background Roads / Contours */}
-                <path
-                  d="M0 120 Q180 140 320 180 T700 240 M100 0 Q140 180 200 380 M480 0 Q460 200 520 380 M0 280 Q300 260 700 120 M260 0 C280 120 340 240 380 380"
-                  stroke="#ffffff"
-                  strokeWidth="3.5"
-                  fill="none"
-                  opacity="0.8"
-                />
-                <path
-                  d="M50 80 Q200 90 400 140 T700 180 M350 40 Q400 180 440 340"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                  fill="none"
-                  opacity="0.6"
-                />
-
-                {/* Upper Lake (Bada Talab) - Organic Water Body */}
-                <path
-                  d="M40 160 C80 140 150 130 220 150 C290 170 330 140 380 170 C410 190 440 220 420 270 C400 310 320 320 240 330 C160 340 90 300 60 260 C30 220 20 180 40 160 Z"
-                  fill="#a2d5ed"
-                  stroke="#8ac5e2"
-                  strokeWidth="1.5"
-                />
-                {/* Upper Lake western extension */}
-                <path
-                  d="M0 200 C30 180 60 170 90 200 C110 220 80 250 50 260 C20 270 0 240 0 200 Z"
-                  fill="#a2d5ed"
-                />
-
-                {/* Lower Lake (Chhota Talab) */}
-                <path
-                  d="M390 290 C410 260 450 250 480 280 C500 300 480 340 440 350 C410 360 380 320 390 290 Z"
-                  fill="#a2d5ed"
-                  stroke="#8ac5e2"
-                  strokeWidth="1.5"
-                />
-
-                {/* Shahpura Lake (south) */}
-                <path
-                  d="M470 370 C490 355 520 360 530 380 L460 380 Z"
-                  fill="#a2d5ed"
-                  opacity="0.9"
-                />
-
-                {/* Lake Names Labels */}
-                <text
-                  x="220"
-                  y="235"
-                  fill="#2c7799"
-                  fontSize="13"
-                  fontWeight="600"
-                  fontFamily="system-ui, sans-serif"
-                  letterSpacing="0.5"
+            <div className="relative w-full flex-1 min-h-[360px] sm:min-h-[420px] rounded-xl overflow-hidden bg-[#eef5f3] border border-slate-200/90 shadow-inner select-none flex items-center justify-center p-1 sm:p-2">
+              <div className="relative w-full h-full max-w-[700px] max-h-[380px] aspect-[700/380]">
+                <svg
+                  viewBox="0 0 700 380"
+                  className="w-full h-full"
+                  preserveAspectRatio="none"
                 >
-                  Upper Lake
-                </text>
-                <text
-                  x="418"
-                  y="312"
-                  fill="#2c7799"
-                  fontSize="11"
-                  fontWeight="600"
-                  fontFamily="system-ui, sans-serif"
-                  letterSpacing="0.3"
+                  {/* Background Roads / Contours */}
+                  <path
+                    d="M0 120 Q180 140 320 180 T700 240 M100 0 Q140 180 200 380 M480 0 Q460 200 520 380 M0 280 Q300 260 700 120 M260 0 C280 120 340 240 380 380"
+                    stroke="#ffffff"
+                    strokeWidth="3.5"
+                    fill="none"
+                    opacity="0.8"
+                  />
+                  <path
+                    d="M50 80 Q200 90 400 140 T700 180 M350 40 Q400 180 440 340"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                    fill="none"
+                    opacity="0.6"
+                  />
+
+                  {/* Upper Lake (Bada Talab) - Organic Water Body */}
+                  <path
+                    d="M40 160 C80 140 150 130 220 150 C290 170 330 140 380 170 C410 190 440 220 420 270 C400 310 320 320 240 330 C160 340 90 300 60 260 C30 220 20 180 40 160 Z"
+                    fill="#a2d5ed"
+                    stroke="#8ac5e2"
+                    strokeWidth="1.5"
+                  />
+                  {/* Upper Lake western extension */}
+                  <path
+                    d="M0 200 C30 180 60 170 90 200 C110 220 80 250 50 260 C20 270 0 240 0 200 Z"
+                    fill="#a2d5ed"
+                  />
+
+                  {/* Lower Lake (Chhota Talab) */}
+                  <path
+                    d="M390 290 C410 260 450 250 480 280 C500 300 480 340 440 350 C410 360 380 320 390 290 Z"
+                    fill="#a2d5ed"
+                    stroke="#8ac5e2"
+                    strokeWidth="1.5"
+                  />
+
+                  {/* Shahpura Lake (south) */}
+                  <path
+                    d="M470 370 C490 355 520 360 530 380 L460 380 Z"
+                    fill="#a2d5ed"
+                    opacity="0.9"
+                  />
+
+                  {/* Lake Names Labels (positioned clearly away from all ghats) */}
+                  <text
+                    x="210"
+                    y="235"
+                    fill="#2c7799"
+                    fontSize="13"
+                    fontWeight="600"
+                    fontFamily="system-ui, sans-serif"
+                    letterSpacing="0.5"
+                  >
+                    Upper Lake
+                  </text>
+                  <text
+                    x="425"
+                    y="315"
+                    fill="#2c7799"
+                    fontSize="11"
+                    fontWeight="600"
+                    fontFamily="system-ui, sans-serif"
+                    letterSpacing="0.3"
+                  >
+                    Lower Lake
+                  </text>
+
+                  {/* Subtle Dots for Other Ghats */}
+                  <circle cx="165" cy="240" r="4.5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="360" cy="245" r="4.5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="435" cy="275" r="4.5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="475" cy="350" r="4.5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="560" cy="180" r="4.5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="95" cy="325" r="4.5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="380" cy="360" r="4.5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
+                </svg>
+
+                {/* Pin 1: Bairagarh kund (Upper Lake NW - High Priority) */}
+                <div
+                  onClick={() => handleOpenGhat(bairagarhGhat)}
+                  className="absolute top-[18%] left-[23%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-all hover:scale-105"
+                  title="Bairagarh (Sant Hirdaram) kund - High Priority (Click to view details)"
                 >
-                  Lower Lake
-                </text>
-                <text
-                  x="475"
-                  y="225"
-                  fill="#475569"
-                  fontSize="15"
-                  fontWeight="700"
-                  fontFamily="system-ui, sans-serif"
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-rose-500 shadow-md flex items-center justify-center flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                  </div>
+                  <div className="bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs text-[10px] font-bold text-slate-800 whitespace-nowrap group-hover:border-rose-300">
+                    Bairagarh kund
+                  </div>
+                </div>
+
+                {/* Pin 2: Malikhedi kund (North bypass - High Priority) */}
+                <div
+                  onClick={() => handleOpenGhat(malikhediGhat)}
+                  className="absolute top-[17%] left-[55%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-all hover:scale-105"
+                  title="Malikhedi kund - High Priority (Click to view details)"
                 >
-                  Bhopal
-                </text>
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-rose-500 shadow-md flex items-center justify-center flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                  </div>
+                  <div className="bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs text-[10px] font-bold text-slate-800 whitespace-nowrap group-hover:border-rose-300">
+                    Malikhedi kund
+                  </div>
+                </div>
 
-                {/* Subtle Dots for Other Ghats */}
-                <circle cx="165" cy="240" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="360" cy="245" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="435" cy="275" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="475" cy="350" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="560" cy="180" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="95" cy="325" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="380" cy="360" r="5" fill="#94a3b8" stroke="#ffffff" strokeWidth="2" />
-              </svg>
+                {/* Pin 3: Rani Kamlapati / Kamla Park (Between Lakes - High Priority) */}
+                <div
+                  onClick={() => handleOpenGhat(kamlaParkGhat)}
+                  className="absolute top-[46%] left-[54%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-all hover:scale-105"
+                  title="Rani Kamlapati / Kamla Park kund - High Priority (Click to view details)"
+                >
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-rose-500 shadow-md flex items-center justify-center flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                  </div>
+                  <div className="bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs text-[10px] font-bold text-slate-800 whitespace-nowrap group-hover:border-rose-300">
+                    Kamla Park
+                  </div>
+                </div>
 
-              {/* Pin 1: Bairagarh kund - Dynamic priority from ranking */}
-              <div
-                onClick={() => handleOpenGhat(bairagarhGhat)}
-                className="absolute top-[16%] left-[24%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-transform hover:scale-105"
-                title={`${bairagarhGhat.site} - ${getPriorityLabel(bairagarhGhat.priority)} Priority (Click to view details)`}
-              >
-                <div className={`w-5 h-5 rounded-full bg-white border-2 ${getPriorityColors(bairagarhGhat.priority).border} shadow-md flex items-center justify-center`}>
-                  <div className={`w-2.5 h-2.5 rounded-full ${getPriorityColors(bairagarhGhat.priority).bg} ${bairagarhGhat.priority === 'high' ? 'animate-pulse' : ''}`} />
+                {/* Pin 4: Prempura ghat (Upper Lake SW - Heavy Immersion / Prohibited) */}
+                <div
+                  onClick={() => handleOpenGhat(prempuraGhat)}
+                  className="absolute top-[72%] left-[24%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-all hover:scale-105"
+                  title="Prempura ghat - Major Staging Hub (Click to view details)"
+                >
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-amber-500 shadow-md flex items-center justify-center flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  </div>
+                  <div className="bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs text-[10px] font-bold text-slate-800 whitespace-nowrap group-hover:border-amber-300">
+                    Prempura
+                  </div>
                 </div>
-                <div className={`bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/90 shadow-sm text-[11px] font-bold text-slate-800 whitespace-nowrap ${getPriorityColors(bairagarhGhat.priority).hover}`}>
-                  Bairagarh kund
-                </div>
-              </div>
 
-              {/* Pin 2: Malikhedi kund - Dynamic priority from ranking */}
-              <div
-                onClick={() => handleOpenGhat(malikhediGhat)}
-                className="absolute top-[21%] left-[54%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-transform hover:scale-105"
-                title={`${malikhediGhat.site} - ${getPriorityLabel(malikhediGhat.priority)} Priority (Click to view details)`}
-              >
-                <div className={`w-5 h-5 rounded-full bg-white border-2 ${getPriorityColors(malikhediGhat.priority).border} shadow-md flex items-center justify-center`}>
-                  <div className={`w-2.5 h-2.5 rounded-full ${getPriorityColors(malikhediGhat.priority).bg}`} />
+                {/* Pin 5: Khatlapura ghat (Lower Lake - Historic Crowd / Prohibited) */}
+                <div
+                  onClick={() => handleOpenGhat(khatlapuraGhat)}
+                  className="absolute top-[54%] left-[67%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-all hover:scale-105"
+                  title="Khatlapura ghat - Historic Visarjan Ghat (Click to view details)"
+                >
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-amber-500 shadow-md flex items-center justify-center flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  </div>
+                  <div className="bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs text-[10px] font-bold text-slate-800 whitespace-nowrap group-hover:border-amber-300">
+                    Khatlapura
+                  </div>
                 </div>
-                <div className={`bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/90 shadow-sm text-[11px] font-bold text-slate-800 whitespace-nowrap ${getPriorityColors(malikhediGhat.priority).hover}`}>
-                  Malikhedi kund
-                </div>
-              </div>
 
-              {/* Pin 3: Kaliasot - Dynamic priority from ranking */}
-              <div
-                onClick={() => handleOpenGhat(kaliasotGhat)}
-                className="absolute bottom-[22%] left-[18%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-transform hover:scale-105"
-                title={`${kaliasotGhat.site} - ${getPriorityLabel(kaliasotGhat.priority)} Priority (Click to view details)`}
-              >
-                <div className={`w-5 h-5 rounded-full bg-white border-2 ${getPriorityColors(kaliasotGhat.priority).border} shadow-md flex items-center justify-center`}>
-                  <div className={`w-2.5 h-2.5 rounded-full ${getPriorityColors(kaliasotGhat.priority).bg}`} />
+                {/* Pin 6: Shahpura lake ghat (South Bhopal - Medium Priority) */}
+                <div
+                  onClick={() => handleOpenGhat(shahpuraGhat)}
+                  className="absolute top-[82%] left-[65%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-all hover:scale-105"
+                  title="Shahpura lake ghat (Click to view details)"
+                >
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-amber-500 shadow-md flex items-center justify-center flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  </div>
+                  <div className="bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs text-[10px] font-bold text-slate-800 whitespace-nowrap group-hover:border-amber-300">
+                    Shahpura
+                  </div>
                 </div>
-                <div className={`bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/90 shadow-sm text-[11px] font-bold text-slate-800 whitespace-nowrap ${getPriorityColors(kaliasotGhat.priority).hover}`}>
-                  {kaliasotGhat.site.split(' ')[0]}
-                </div>
-              </div>
 
-              {/* Bottom Right Floating Map Legend */}
-              <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-200/90 shadow-md text-[11px] space-y-1.5 z-20 font-medium text-slate-700 pointer-events-none">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0" />
-                  <span>High Priority</span>
+                {/* Pin 7: Hathaikheda dam / kund (East Peripheral - Low Priority) */}
+                <div
+                  onClick={() => handleOpenGhat(hathaikhedaGhat)}
+                  className="absolute top-[24%] left-[84%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 flex items-center gap-1.5 transition-all hover:scale-105"
+                  title="Hathaikheda dam / kund (Click to view details)"
+                >
+                  <div className="w-5 h-5 rounded-full bg-white border-2 border-emerald-500 shadow-md flex items-center justify-center flex-shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  </div>
+                  <div className="bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-slate-200/90 shadow-2xs text-[10px] font-bold text-slate-800 whitespace-nowrap group-hover:border-emerald-300">
+                    Hathaikheda
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0" />
-                  <span>Medium Priority</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                  <span>Low Priority</span>
+
+                {/* Bottom Left Floating Map Legend (Clear of all pins) */}
+                <div className="absolute bottom-2.5 left-2.5 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-200/90 shadow-md text-[10px] space-y-1 z-20 font-medium text-slate-700 pointer-events-none">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 ring-2 ring-rose-200 flex-shrink-0" />
+                    <span>{language === 'hi' ? 'उच्च जोखिम' : 'High Hazard'}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 ring-2 ring-amber-200 flex-shrink-0" />
+                    <span>{language === 'hi' ? 'मध्यम / एनजीटी' : 'Medium / NGT Watch'}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200 flex-shrink-0" />
+                    <span>{language === 'hi' ? 'क्लास बी अनुपालन' : 'Class B Compliant'}</span>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,7 +1,7 @@
 {
   "name": "ghatrakshak-server",
   "version": "1.0.0",
-  "description": "Ghatरक्षक - Water quality analytics server",
+  "description": "Ghatrakshak - Water quality analytics server",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

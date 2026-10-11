@@ -20,11 +20,16 @@ RUN npm run build
 # ------------------------------------------------------------------------------
 FROM node:20-slim AS runner
 
-# Install Python 3, pip, venv, and curl for healthchecks
+# Ensure UTF-8 encoding across all tools
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+# Install Python 3, pip, venv, build tools for native node modules, and curl for healthchecks
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
+    build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,9 +41,9 @@ RUN python3 -m venv /app/venv && \
     /app/venv/bin/pip install --no-cache-dir --upgrade pip && \
     /app/venv/bin/pip install --no-cache-dir -r ./engine/requirements.txt
 
-# Install server production dependencies
+# Install server production dependencies (with resilient fallback)
 COPY server/package*.json ./server/
-RUN cd server && npm ci --omit=dev
+RUN cd server && (npm ci --omit=dev || npm install --omit=dev --no-audit --no-fund)
 
 # Copy application data and source files
 COPY track-2-visarjan-ghat-watch ./track-2-visarjan-ghat-watch
