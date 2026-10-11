@@ -394,4 +394,22 @@ describe('Integration: Missing Values in Rankings', () => {
     assert.strictEqual(phEvidence.totalRecords, 11);
     assert.strictEqual(phEvidence.exceedanceDenominator, 10);
   });
+
+  it('should track invalid observations separately and exclude from calculations', () => {
+    const observations = [
+      createObservation({ parameter: 'pH', numericValue: 7.0, validationStatus: 'valid' }),
+      createObservation({ parameter: 'pH', numericValue: null, validationStatus: 'invalid', qualifier: null }),
+      createObservation({ parameter: 'pH', numericValue: null, validationStatus: 'missing', qualifier: 'missing' }),
+      createObservation({ parameter: 'pH', numericValue: null, validationStatus: 'qualified', qualifier: 'BDL' })
+    ];
+
+    const evidence = aggregateParameterEvidence(observations, 'pH');
+
+    assert.strictEqual(evidence.totalRecords, 4);
+    assert.strictEqual(evidence.validNumericCount, 1);
+    assert.strictEqual(evidence.invalidCount, 1);
+    assert.strictEqual(evidence.missingCount, 1);
+    assert.strictEqual(evidence.bdlCount, 1);
+    assert.strictEqual(evidence.exceedanceDenominator, 1);
+  });
 });

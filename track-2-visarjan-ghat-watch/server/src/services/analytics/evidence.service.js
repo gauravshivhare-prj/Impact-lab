@@ -90,6 +90,7 @@ export function aggregateParameterEvidence(observations, parameter) {
       missingCount: 0,
       bdlCount: 0,
       ndCount: 0,
+      invalidCount: 0,
       qualifiedCount: 0,
       exceedanceCount: 0,
       exceedanceRate: null,
@@ -104,6 +105,7 @@ export function aggregateParameterEvidence(observations, parameter) {
   let missingCount = 0;
   let bdlCount = 0;
   let ndCount = 0;
+  let invalidCount = 0;
   let exceedanceCount = 0;
   const numericValues = [];
   const sourcePages = new Set();
@@ -127,6 +129,8 @@ export function aggregateParameterEvidence(observations, parameter) {
       bdlCount++;
     } else if (isND(obs)) {
       ndCount++;
+    } else if (obs.validationStatus === 'invalid') {
+      invalidCount++;
     }
   }
 
@@ -162,6 +166,7 @@ export function aggregateParameterEvidence(observations, parameter) {
     missingCount,
     bdlCount,
     ndCount,
+    invalidCount,
     qualifiedCount,
     exceedanceCount,
     exceedanceRate,
@@ -194,12 +199,14 @@ export function generateDatasetSummary(observations) {
   let totalMissing = 0;
   let totalBDL = 0;
   let totalND = 0;
+  let totalInvalid = 0;
 
   for (const obs of observations) {
     if (isValidForCalculation(obs)) totalValid++;
     else if (isMissing(obs)) totalMissing++;
     else if (isBDL(obs)) totalBDL++;
     else if (isND(obs)) totalND++;
+    else if (obs.validationStatus === 'invalid') totalInvalid++;
   }
 
   const benchmarkedParams = getAllBenchmarkedParameters();
@@ -229,6 +236,7 @@ export function generateDatasetSummary(observations) {
     missingCount: totalMissing,
     bdlCount: totalBDL,
     ndCount: totalND,
+    invalidCount: totalInvalid,
     benchmarkCoverage,
     limitations: [
       'Historical data from 2023-2025 does not represent current 2026 conditions.',
